@@ -8,6 +8,6 @@
     mc:Ignorable="d">
 
     <Grid>
-        <MediaPlayerElement x:Name="mediaPlayerElement" AreTransportControlsEnabled="True" AutoPlay="False"/>
+        <MediaPlayerElement x:Name="mediaPlayerElement" AreTransportControlsEnabled="False" AutoPlay="False"/>
     </Grid>
 </Page>

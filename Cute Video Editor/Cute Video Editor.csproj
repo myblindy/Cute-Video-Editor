@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.22000.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>CuteVideoEditor</RootNamespace>
     <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="FFmpegInteropX.FFmpegUWP" Version="5.1.100" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
@@ -39,6 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cute Video Editor.Core\Cute Video Editor.Core.csproj" />
+    <ProjectReference Include="..\FFmpegInteropX\Source\FFmpegInteropX.DotNet.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
@@ -47,14 +47,16 @@
 
   <Target Name="IncludeFFmpegInteropXInRuntimesFolder" BeforeTargets="GetCopyToOutputDirectoryItems">
     <ItemGroup>
-      <AllItemsFullPathWithTargetPath Include="$(OutDir)FFmpegInteropX.dll">
+      <!--<AllItemsFullPathWithTargetPath Include="$(OutDir)FFmpegInteropX.dll">
         <TargetPath>runtimes\win10-$(Platform)\native\FFmpegInteropX.dll</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </AllItemsFullPathWithTargetPath>
-      <AllItemsFullPathWithTargetPath Include="$(OutDir)FFmpegInteropX.pdb">
+      </AllItemsFullPathWithTargetPath>-->
+      <!--<AllItemsFullPathWithTargetPath Include="$(OutDir)FFmpegInteropX.pdb">
         <TargetPath>runtimes\win10-$(Platform)\native\FFmpegInteropX.pdb</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </AllItemsFullPathWithTargetPath>
+      </AllItemsFullPathWithTargetPath>-->
     </ItemGroup>
   </Target>
+
+  <Import Project="..\Cute Video Editor.SharedAVLib\Cute Video Editor.SharedAVLib.projitems" Label="Shared" />
 </Project>

@@ -5,6 +5,9 @@ using ReactiveUI;
 using Windows.Media.Playback;
 using Windows.Storage;
 
+using FFmpegInteropX;
+using System.Reactive.Linq;
+
 namespace CuteVideoEditor.Views;
 
 public sealed partial class MainPage : Page
@@ -12,6 +15,7 @@ public sealed partial class MainPage : Page
     public MainViewModel ViewModel { get; }
 
     readonly MediaPlayer mediaPlayer;
+    FFmpegMediaSource? mediaSource;
 
     public MainPage()
     {
@@ -31,14 +35,27 @@ public sealed partial class MainPage : Page
         {
 
         };
+        mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
         // load media on demand
-        ViewModel.WhenAnyValue(x => x.MediaFileName).Subscribe(async mediaFileName =>
+        ViewModel.WhenAnyValue(x => x.MediaFileName).Distinct().Subscribe(async mediaFileName =>
         {
-            var file = await StorageFile.GetFileFromPathAsync(mediaFileName);
-            using var stream = await file.OpenReadAsync();
+            mediaSource?.Dispose();
+            mediaSource = null;
 
+            if (!string.IsNullOrWhiteSpace(mediaFileName))
+            {
+                var file = await StorageFile.GetFileFromPathAsync(mediaFileName);
+                var stream = await file.OpenReadAsync();
 
+                mediaSource = await FFmpegMediaSource.CreateFromStreamAsync(stream);
+                await mediaSource.OpenWithMediaPlayerAsync(mediaPlayer);
+            }
+            else
+                mediaPlayer.Source = null;
         });
+
+        // for testing
+        ViewModel.MediaFileName = @"D:\temp\[FANCAM] 230709 트와이스 TWICE World Tour Ready To Be Atlanta Encore Firework + Celebrate + TT [T7PDj4LSHRE].mp4";
     }
 }
