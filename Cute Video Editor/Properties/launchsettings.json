@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "Cute Video Editor (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "Cute Video Editor (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}
