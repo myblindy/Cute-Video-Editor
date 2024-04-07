@@ -6,18 +6,20 @@ using CuteVideoEditor.Views;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Windows.UI.Core;
 
 namespace CuteVideoEditor;
 
 public partial class App : Application
 {
-    public IHost Host { get; }
+    readonly IHost host;
 
     public static T GetService<T>()
         where T : class
     {
-        if ((App.Current as App)!.Host.Services.GetService<T>() is not { } service)
+        if ((App.Current as App)!.host.Services.GetService<T>() is not { } service)
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
 
         return service;
@@ -27,11 +29,13 @@ public partial class App : Application
 
     public static UIElement? AppTitlebar { get; set; }
 
+    public static DispatcherQueue MainDispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
+
     public App()
     {
         InitializeComponent();
 
-        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+        host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
             .UseContentRoot(AppContext.BaseDirectory)
             .ConfigureServices((context, services) =>
             {

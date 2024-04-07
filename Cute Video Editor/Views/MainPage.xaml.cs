@@ -7,6 +7,7 @@ using Windows.Storage;
 
 using FFmpegInteropX;
 using System.Reactive.Linq;
+using Windows.UI.Core;
 
 namespace CuteVideoEditor.Views;
 
@@ -29,7 +30,7 @@ public sealed partial class MainPage : Page
         };
         mediaPlayer.MediaOpened += (s, e) =>
         {
-
+            App.MainDispatcherQueue.TryEnqueue(() => ViewModel.MediaDuration = s.NaturalDuration);
         };
         mediaPlayer.MediaFailed += (s, e) =>
         {

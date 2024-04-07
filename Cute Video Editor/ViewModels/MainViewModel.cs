@@ -7,6 +7,9 @@ public partial class MainViewModel : ObservableRecipient
     [ObservableProperty]
     string? mediaFileName;
 
+    [ObservableProperty]
+    TimeSpan mediaDuration;
+
     public MainViewModel()
     {
     }

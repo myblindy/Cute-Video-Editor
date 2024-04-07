@@ -17,6 +17,9 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Views\Controls\TimeBarHeader.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
@@ -39,6 +42,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Cute Video Editor.Core\Cute Video Editor.Core.csproj" />
     <ProjectReference Include="..\FFmpegInteropX\Source\FFmpegInteropX.DotNet.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\Controls\TimeBarHeader.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
