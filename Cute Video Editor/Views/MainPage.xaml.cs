@@ -28,10 +28,10 @@ public sealed partial class MainPage : Page
         {
             AudioCategory = MediaPlayerAudioCategory.Movie
         };
+        mediaPlayer.PlaybackSession.PositionChanged += (s, e) =>
+            App.MainDispatcherQueue.TryEnqueue(() => ViewModel.MediaPosition = s.Position);
         mediaPlayer.MediaOpened += (s, e) =>
-        {
             App.MainDispatcherQueue.TryEnqueue(() => ViewModel.MediaDuration = s.NaturalDuration);
-        };
         mediaPlayer.MediaFailed += (s, e) =>
         {
 
@@ -58,5 +58,14 @@ public sealed partial class MainPage : Page
 
         // for testing
         ViewModel.MediaFileName = @"D:\temp\[FANCAM] 230709 트와이스 TWICE World Tour Ready To Be Atlanta Encore Firework + Celebrate + TT [T7PDj4LSHRE].mp4";
+    }
+
+    private void Page_PreviewKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Space)
+            if (mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState is MediaPlaybackState.Playing)
+                mediaPlayerElement.MediaPlayer.Pause();
+            else
+                mediaPlayerElement.MediaPlayer.Play();
     }
 }

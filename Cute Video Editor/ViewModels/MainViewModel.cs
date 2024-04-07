@@ -10,6 +10,9 @@ public partial class MainViewModel : ObservableRecipient
     [ObservableProperty]
     TimeSpan mediaDuration;
 
+    [ObservableProperty]
+    TimeSpan mediaPosition;
+
     public MainViewModel()
     {
     }

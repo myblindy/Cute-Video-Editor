@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:CuteVideoEditor.Views.Controls"
     Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-    mc:Ignorable="d">
+    mc:Ignorable="d" PreviewKeyDown="Page_PreviewKeyDown">
 
     <Grid RowSpacing="5">
         <Grid.RowDefinitions>
@@ -15,6 +15,8 @@
 
         <MediaPlayerElement Grid.Row="0" x:Name="mediaPlayerElement" AreTransportControlsEnabled="False" AutoPlay="False"/>
 
-        <controls:TimeBarHeader Grid.Row="1" End="{x:Bind ViewModel.MediaDuration, Mode=OneWay}"/>
+        <controls:TimeBarHeader Grid.Row="1" 
+                                End="{x:Bind ViewModel.MediaDuration, Mode=OneWay}"
+                                Position="{x:Bind ViewModel.MediaPosition, Mode=OneWay}"/>
     </Grid>
 </Page>

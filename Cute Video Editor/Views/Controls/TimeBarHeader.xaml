@@ -9,27 +9,40 @@
     mc:Ignorable="d"
     MinHeight="40">
 
-    <ItemsControl ItemsSource="{x:Bind Ticks}">
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <Canvas/>
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="local:TimeBarHeaderTickEntry">
-                <Grid>
-                    <Grid.RenderTransform>
-                        <TranslateTransform X="{x:Bind local:TimeBarHeader.GetXOffset(TimeSpan, TimeBarHeader)}" Y="10"/>
-                    </Grid.RenderTransform>
+    <Grid>
+        <!-- ticks -->
+        <ItemsControl ItemsSource="{x:Bind Ticks}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:TimeBarHeaderTickEntry">
+                    <Grid>
+                        <Grid.RenderTransform>
+                            <TranslateTransform X="{x:Bind local:TimeBarHeader.GetXOffset(TimeSpan, TimeBarHeader)}" Y="10"/>
+                        </Grid.RenderTransform>
 
-                    <TextBlock Text="{x:Bind DisplayText}"/>
-                    <Line Y2="{x:Bind local:TimeBarHeader.GetTickHeight(Multiplier)}" Stroke="Black">
-                        <Line.RenderTransform>
-                            <TranslateTransform X="-3" Y="-10"/>
-                        </Line.RenderTransform>
-                    </Line>
-                </Grid>
-            </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ItemsControl>
+                        <TextBlock Text="{x:Bind DisplayText}" Foreground="#333" FontSize="10"/>
+                        <Line Y2="{x:Bind local:TimeBarHeader.GetTickHeight(Multiplier)}" Stroke="#aaa">
+                            <Line.RenderTransform>
+                                <TranslateTransform X="-3" Y="-10"/>
+                            </Line.RenderTransform>
+                        </Line>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- position -->
+        <Canvas>
+            <Line Y2="40" Stroke="Black" StrokeThickness="2">
+                <Line.RenderTransform>
+                    <TranslateTransform X="{x:Bind local:TimeBarHeader.GetXOffset(PositionTick.TimeSpan, PositionTick.TimeBarHeader), Mode=OneWay}"/>
+                </Line.RenderTransform>
+            </Line>
+        </Canvas>
+    </Grid>
+
 </UserControl>
