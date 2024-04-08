@@ -48,12 +48,13 @@ public partial class App : Application
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IPageService, PageService>();
                 services.AddSingleton<INavigationService, NavigationService>();
+                services.AddSingleton<DialogService>();
 
                 // Core Services
 
                 // Views and ViewModels
-                services.AddTransient<MainViewModel>();
-                services.AddTransient<MainPage>();
+                services.AddScoped<MainViewModel>();
+                services.AddScoped<MainPage>();
 
                 // Configuration
             })

@@ -7,28 +7,12 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace CuteVideoEditor.Services;
 
-public class ActivationService : IActivationService
+public class ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers) : IActivationService
 {
-    private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
-    private readonly IEnumerable<IActivationHandler> _activationHandlers;
-    private UIElement? _shell = null;
-
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers)
-    {
-        _defaultHandler = defaultHandler;
-        _activationHandlers = activationHandlers;
-    }
-
     public async Task ActivateAsync(object activationArgs)
     {
         // Execute tasks before activation.
         await InitializeAsync();
-
-        // Set the MainWindow Content.
-        if (App.MainWindow.Content == null)
-        {
-            App.MainWindow.Content = _shell ?? new Frame();
-        }
 
         // Handle activation via ActivationHandlers.
         await HandleActivationAsync(activationArgs);
@@ -42,16 +26,16 @@ public class ActivationService : IActivationService
 
     private async Task HandleActivationAsync(object activationArgs)
     {
-        var activationHandler = _activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
+        var activationHandler = activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
 
         if (activationHandler != null)
         {
             await activationHandler.HandleAsync(activationArgs);
         }
 
-        if (_defaultHandler.CanHandle(activationArgs))
+        if (defaultHandler.CanHandle(activationArgs))
         {
-            await _defaultHandler.HandleAsync(activationArgs);
+            await defaultHandler.HandleAsync(activationArgs);
         }
     }
 

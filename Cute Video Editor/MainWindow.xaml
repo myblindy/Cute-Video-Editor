@@ -5,7 +5,7 @@
     xmlns:local="using:CuteVideoEditor"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:windowex="using:WinUIEx"
+    xmlns:windowex="using:WinUIEx" xmlns:views="using:CuteVideoEditor.Views" xmlns:viewmodels="using:CuteVideoEditor.ViewModels"
     MinWidth="500"
     MinHeight="500"
     PersistenceId="MainWindow"
@@ -13,4 +13,55 @@
     <Window.SystemBackdrop>
         <MicaBackdrop/>
     </Window.SystemBackdrop>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="AppTitleBar" Canvas.ZIndex="1" IsHitTestVisible="True" VerticalAlignment="Top"
+              Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition x:Name="IconColumn" Width="auto"/>
+                <ColumnDefinition x:Name="TabsColumn" Width="auto"/>
+                <ColumnDefinition x:Name="LeftDragColumn" Width="*"/>
+                <ColumnDefinition x:Name="TitleColumn" Width="auto"/>
+                <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Grid.Column="1" Source="/Assets/WindowIcon.ico"
+                   Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <TabView Grid.Column="2"  x:Name="TabView" TabItemsSource="{x:Bind Tabs}"
+                 SelectedItem="{x:Bind SelectedTab, Mode=TwoWay}"
+                 AddTabButtonClick="TabView_AddTabButtonClick" TabCloseRequested="TabView_TabCloseRequested">
+                <TabView.TabItemTemplate>
+                    <DataTemplate x:DataType="local:MainWindowTabEntry">
+                        <TabViewItem Header="{x:Bind local:MainWindow.GetTabName(Page.ViewModel.MediaFileName)}"/>
+                    </DataTemplate>
+                </TabView.TabItemTemplate>
+            </TabView>
+
+            <TextBlock Grid.Column="4" x:Name="AppTitleBarText" VerticalAlignment="Center" HorizontalAlignment="Center"
+                       TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"/>
+        </Grid>
+
+        <ItemsControl Grid.Row="1" ItemsSource="{x:Bind Tabs}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:MainWindowTabEntry">
+                    <ContentControl Content="{x:Bind Page}"
+                                    Visibility="{x:Bind Visibility, Mode=OneWay}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
 </windowex:WindowEx>

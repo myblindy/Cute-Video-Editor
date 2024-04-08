@@ -8,10 +8,11 @@
 
   <ItemGroup>
     <Folder Include="Contracts\Services\" />
-    <Folder Include="Models\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="ReactiveUI" Version="19.6.1" />
   </ItemGroup>
 </Project>

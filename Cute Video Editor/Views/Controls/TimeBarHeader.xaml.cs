@@ -50,7 +50,7 @@ public sealed partial class TimeBarHeader : UserControl
         {
             Ticks.Clear();
             var length = End - Start;
-            if (length != default)
+            if (length != default && ActualWidth != 0)
             {
                 const double TicksPerPixel = 0.005;
                 var tickCount = (int)Math.Ceiling(ActualWidth * TicksPerPixel);
