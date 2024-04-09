@@ -5,10 +5,10 @@
     xmlns:local="using:CuteVideoEditor"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:windowex="using:WinUIEx" xmlns:views="using:CuteVideoEditor.Views" xmlns:viewmodels="using:CuteVideoEditor.ViewModels"
-    MinWidth="500"
-    MinHeight="500"
-    PersistenceId="MainWindow"
+    xmlns:windowex="using:WinUIEx" 
+    xmlns:views="using:CuteVideoEditor.Views" 
+    xmlns:viewmodels="using:CuteVideoEditor.ViewModels"
+    MinWidth="500" MinHeight="500" PersistenceId="MainWindow" 
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop/>
@@ -36,8 +36,8 @@
                    Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
             <TabView Grid.Column="2"  x:Name="TabView" TabItemsSource="{x:Bind Tabs}"
-                 SelectedItem="{x:Bind SelectedTab, Mode=TwoWay}"
-                 AddTabButtonClick="TabView_AddTabButtonClick" TabCloseRequested="TabView_TabCloseRequested">
+                     SelectedItem="{x:Bind SelectedTab, Mode=TwoWay}"
+                     AddTabButtonClick="TabView_AddTabButtonClick" TabCloseRequested="TabView_TabCloseRequested">
                 <TabView.TabItemTemplate>
                     <DataTemplate x:DataType="local:MainWindowTabEntry">
                         <TabViewItem Header="{x:Bind local:MainWindow.GetTabName(Page.ViewModel.MediaFileName)}"/>

@@ -39,6 +39,8 @@ public sealed partial class MainPage : Page
         {
         };
         mediaPlayerElement.SetMediaPlayer(mediaPlayer);
+        mediaPlayerElement.SizeChanged += (s, e) =>
+            ViewModel.VideoPlayerPixelSize = new((int)mediaPlayerElement.ActualWidth, (int)mediaPlayerElement.ActualHeight);
 
         // view model controlling the media player
         ViewModel.WhenAnyValue(x => x.MediaPlaybackState).Subscribe(state =>

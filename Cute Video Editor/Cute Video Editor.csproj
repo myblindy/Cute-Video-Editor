@@ -18,7 +18,8 @@
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Views\Controls\TimeBarHeader.xaml" />
+    <None Remove="Views\Controls\CropBoxControl.xaml" />
+    <None Remove="Views\Controls\TimeBarHeaderControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,7 +46,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\Controls\TimeBarHeader.xaml">
+    <Page Update="Views\Controls\CropBoxControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\Controls\TimeBarHeaderControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

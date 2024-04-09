@@ -1,18 +1,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ReactiveUI;
 using System.Collections.ObjectModel;
-using System.Windows.Media.Animation;
 
 namespace CuteVideoEditor.Views.Controls;
 
 [ObservableObject]
-public sealed partial class TimeBarHeader : UserControl
+public sealed partial class TimeBarHeaderControl : UserControl
 {
     public static readonly DependencyProperty EndProperty =
-        DependencyProperty.Register(nameof(End), typeof(TimeSpan), typeof(TimeBarHeader), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
-            ((TimeBarHeader)s).Rebuild(RebuildType.Ticks)));
+        DependencyProperty.Register(nameof(End), typeof(TimeSpan), typeof(TimeBarHeaderControl), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
+            ((TimeBarHeaderControl)s).Rebuild(RebuildType.Ticks)));
     public TimeSpan End
     {
         get { return (TimeSpan)GetValue(EndProperty); }
@@ -20,8 +18,8 @@ public sealed partial class TimeBarHeader : UserControl
     }
 
     public static readonly DependencyProperty StartProperty =
-        DependencyProperty.Register(nameof(Start), typeof(TimeSpan), typeof(TimeBarHeader), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
-            ((TimeBarHeader)s).Rebuild(RebuildType.Ticks)));
+        DependencyProperty.Register(nameof(Start), typeof(TimeSpan), typeof(TimeBarHeaderControl), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
+            ((TimeBarHeaderControl)s).Rebuild(RebuildType.Ticks)));
     public TimeSpan Start
     {
         get { return (TimeSpan)GetValue(StartProperty); }
@@ -29,18 +27,18 @@ public sealed partial class TimeBarHeader : UserControl
     }
 
     public static readonly DependencyProperty PositionProperty =
-        DependencyProperty.Register(nameof(Position), typeof(TimeSpan), typeof(TimeBarHeader), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
-            ((TimeBarHeader)s).Rebuild(RebuildType.Position)));
+        DependencyProperty.Register(nameof(Position), typeof(TimeSpan), typeof(TimeBarHeaderControl), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
+            ((TimeBarHeaderControl)s).Rebuild(RebuildType.Position)));
     public TimeSpan Position
     {
         get { return (TimeSpan)GetValue(PositionProperty); }
         set { SetValue(PositionProperty, value); }
     }
 
-    public ObservableCollection<TimeBarHeaderTickEntry> Ticks = [];
+    public ObservableCollection<TimeBarHeaderControlTickEntry> Ticks = [];
 
     [ObservableProperty]
-    TimeBarHeaderTickEntry positionTick;
+    TimeBarHeaderControlTickEntry positionTick;
 
     [Flags]
     enum RebuildType { Ticks = 1 << 0, Position = 1 << 1, All = Ticks | Position }
@@ -71,27 +69,27 @@ public sealed partial class TimeBarHeader : UserControl
         }
     }
 
-    public TimeBarHeader()
+    public TimeBarHeaderControl()
     {
         InitializeComponent();
 
         SizeChanged += (s, e) => Rebuild(RebuildType.All);
     }
 
-    public static double GetXOffset(TimeSpan timeSpan, TimeBarHeader? timeBarHeader) => timeBarHeader is null ? 0 :
+    public static double GetXOffset(TimeSpan timeSpan, TimeBarHeaderControl? timeBarHeader) => timeBarHeader is null ? 0 :
         (timeSpan - timeBarHeader.Start).TotalSeconds / (timeBarHeader.End - timeBarHeader.Start).TotalSeconds * timeBarHeader.ActualWidth + 4;
 
     public static double GetTickHeight(float multiplier) => 40 * multiplier;
 }
 
-public readonly struct TimeBarHeaderTickEntry
+public readonly struct TimeBarHeaderControlTickEntry
 {
     public readonly TimeSpan TimeSpan;
     public readonly float Multiplier;
     public readonly string? DisplayText;
-    public readonly TimeBarHeader TimeBarHeader;
+    public readonly TimeBarHeaderControl TimeBarHeader;
 
-    public TimeBarHeaderTickEntry(TimeSpan timeSpan, float mult, TimeBarHeader timeBarHeader) =>
+    public TimeBarHeaderControlTickEntry(TimeSpan timeSpan, float mult, TimeBarHeaderControl timeBarHeader) =>
         (TimeSpan, Multiplier, TimeBarHeader, DisplayText) =
             (timeSpan, mult, timeBarHeader, mult == 1 ? timeSpan.ToString(@"hh\:mm\:ss") : null);
 }

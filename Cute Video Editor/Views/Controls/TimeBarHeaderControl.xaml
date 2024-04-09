@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UserControl
-    x:Class="CuteVideoEditor.Views.Controls.TimeBarHeader"
+    x:Class="CuteVideoEditor.Views.Controls.TimeBarHeaderControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:CuteVideoEditor.Views.Controls"
@@ -18,14 +18,14 @@
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="local:TimeBarHeaderTickEntry">
+                <DataTemplate x:DataType="local:TimeBarHeaderControlTickEntry">
                     <Grid>
                         <Grid.RenderTransform>
-                            <TranslateTransform X="{x:Bind local:TimeBarHeader.GetXOffset(TimeSpan, TimeBarHeader)}" Y="10"/>
+                            <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(TimeSpan, TimeBarHeader)}" Y="10"/>
                         </Grid.RenderTransform>
 
-                        <TextBlock Text="{x:Bind DisplayText}" Foreground="#333" FontSize="10"/>
-                        <Line Y2="{x:Bind local:TimeBarHeader.GetTickHeight(Multiplier)}" Stroke="#aaa">
+                        <TextBlock Text="{x:Bind DisplayText}" Foreground="#ccc" FontSize="10"/>
+                        <Line Y2="{x:Bind local:TimeBarHeaderControl.GetTickHeight(Multiplier)}" Stroke="#555">
                             <Line.RenderTransform>
                                 <TranslateTransform X="-3" Y="-10"/>
                             </Line.RenderTransform>
@@ -37,9 +37,9 @@
 
         <!-- position -->
         <Canvas>
-            <Line Y2="40" Stroke="Black" StrokeThickness="2">
+            <Line Y2="40" Stroke="White" StrokeThickness="2">
                 <Line.RenderTransform>
-                    <TranslateTransform X="{x:Bind local:TimeBarHeader.GetXOffset(PositionTick.TimeSpan, PositionTick.TimeBarHeader), Mode=OneWay}"/>
+                    <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(PositionTick.TimeSpan, PositionTick.TimeBarHeader), Mode=OneWay}"/>
                 </Line.RenderTransform>
             </Line>
         </Canvas>

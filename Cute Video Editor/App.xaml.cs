@@ -19,7 +19,7 @@ public partial class App : Application
     public static T GetService<T>()
         where T : class
     {
-        if ((App.Current as App)!.host.Services.GetService<T>() is not { } service)
+        if ((Current as App)!.host.Services.GetService<T>() is not { } service)
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
 
         return service;
@@ -35,7 +35,9 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+        RequestedTheme = ApplicationTheme.Dark;
+
+        host = Host.CreateDefaultBuilder()
             .UseContentRoot(AppContext.BaseDirectory)
             .ConfigureServices((context, services) =>
             {
@@ -71,6 +73,6 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-        await App.GetService<IActivationService>().ActivateAsync(args);
+        await GetService<IActivationService>().ActivateAsync(args);
     }
 }
