@@ -8,6 +8,7 @@ using Windows.Storage;
 using FFmpegInteropX;
 using System.Reactive.Linq;
 using Windows.UI.Core;
+using System.Diagnostics;
 
 namespace CuteVideoEditor.Views;
 
@@ -16,6 +17,7 @@ public sealed partial class MainPage : Page
     public MainViewModel ViewModel { get; }
 
     readonly MediaPlayer mediaPlayer;
+    PeriodicTimer? frameTimer;
     FFmpegMediaSource? mediaSource;
 
     public MainPage(MainViewModel mainViewModel)
@@ -28,8 +30,6 @@ public sealed partial class MainPage : Page
         {
             AudioCategory = MediaPlayerAudioCategory.Movie
         };
-        mediaPlayer.PlaybackSession.PositionChanged += (s, e) => App.MainDispatcherQueue.TryEnqueue(() =>
-            ViewModel.MediaPosition = s.Position);
         mediaPlayer.PlaybackSession.PlaybackStateChanged += (s, e) => App.MainDispatcherQueue.TryEnqueue(() =>
             ViewModel.MediaPlaybackState = s.PlaybackState);
         mediaPlayer.MediaOpened += (s, e) =>
@@ -71,6 +71,17 @@ public sealed partial class MainPage : Page
                 ViewModel.MediaPixelSize = new(mediaSource.CurrentVideoStream.PixelWidth, mediaSource.CurrentVideoStream.PixelHeight);
                 ViewModel.MediaDuration = mediaSource.Duration;
                 ViewModel.MediaFrameRate = mediaSource.CurrentVideoStream.FramesPerSecond;
+
+                frameTimer?.Dispose();
+                frameTimer = new(TimeSpan.FromSeconds(1 / ViewModel.MediaFrameRate));
+
+                async Task FrameTimerHandler(PeriodicTimer timer)
+                {
+                    while (await timer.WaitForNextTickAsync().ConfigureAwait(false))
+                        App.MainDispatcherQueue.TryEnqueue(() => ViewModel.MediaPosition = mediaPlayer.PlaybackSession.Position);
+                }
+                _ = FrameTimerHandler(frameTimer);
+
                 await mediaSource.OpenWithMediaPlayerAsync(mediaPlayer);
             }
             else

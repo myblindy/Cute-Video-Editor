@@ -11,77 +11,35 @@
 
     <Canvas Background="Transparent">
         <Canvas.Resources>
-            <Style x:Key="BoxLineStyle" TargetType="Line">
+            <Style x:Key="BoxLineStyle" TargetType="Rectangle">
                 <Setter Property="StrokeThickness" Value="1"/>
                 <Setter Property="IsHitTestVisible" Value="False"/>
             </Style>
-            <Style x:Key="BoxLineShadowStyle" TargetType="Line">
+            <Style x:Key="BoxLineShadowStyle" TargetType="Rectangle">
                 <Setter Property="StrokeThickness" Value="3"/>
                 <Setter Property="Stroke" Value="Black"/>
                 <Setter Property="IsHitTestVisible" Value="False"/>
             </Style>
         </Canvas.Resources>
 
+        <Canvas.RenderTransform>
+            <TranslateTransform X="{x:Bind local:CropBoxControl.GetX(Rectangle, OverlayScale), Mode=OneWay}"
+                                Y="{x:Bind local:CropBoxControl.GetY(Rectangle, OverlayScale), Mode=OneWay}"/>
+        </Canvas.RenderTransform>
+
         <!-- shadow -->
-        <!-- left line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineShadowStyle}"/>
-
-        <!-- top line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineShadowStyle}"/>
-
-        <!-- right line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineShadowStyle}"/>
-
-        <!-- bottom line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineShadowStyle}"/>
+        <Rectangle Width="{x:Bind local:CropBoxControl.GetShadowWidth(Rectangle, OverlayScale), Mode=OneWay}"
+                   Height="{x:Bind local:CropBoxControl.GetShadowHeight(Rectangle, OverlayScale), Mode=OneWay}"
+                   Style="{StaticResource BoxLineShadowStyle}">
+            <Rectangle.RenderTransform>
+                <TranslateTransform X="-1" Y="-1"/>
+            </Rectangle.RenderTransform>
+        </Rectangle>
 
         <!-- foreground -->
-        <!-- left line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineStyle}"
-              Stroke="{x:Bind local:CropBoxControl.GetBrush(Rectangle), Mode=OneWay}"/>
-
-        <!-- top line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineStyle}"
-              Stroke="{x:Bind local:CropBoxControl.GetBrush(Rectangle), Mode=OneWay}"/>
-
-        <!-- right line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY1(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineStyle}"
-              Stroke="{x:Bind local:CropBoxControl.GetBrush(Rectangle), Mode=OneWay}"/>
-
-        <!-- bottom line -->
-        <Line X1="{x:Bind local:CropBoxControl.GetX1(Rectangle, OverlayScale), Mode=OneWay}"
-              Y1="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              X2="{x:Bind local:CropBoxControl.GetX2(Rectangle, OverlayScale), Mode=OneWay}"
-              Y2="{x:Bind local:CropBoxControl.GetY2(Rectangle, OverlayScale), Mode=OneWay}"
-              Style="{StaticResource BoxLineStyle}"
-              Stroke="{x:Bind local:CropBoxControl.GetBrush(Rectangle), Mode=OneWay}"/>
+        <Rectangle Width="{x:Bind local:CropBoxControl.GetWidth(Rectangle, OverlayScale), Mode=OneWay}"
+                   Height="{x:Bind local:CropBoxControl.GetHeight(Rectangle, OverlayScale), Mode=OneWay}"
+                   Style="{StaticResource BoxLineStyle}"
+                   Stroke="{x:Bind local:CropBoxControl.GetBrush(Rectangle), Mode=OneWay}"/>
     </Canvas>
 </UserControl>

@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reactive.Linq;
 using Windows.Media.Playback;
+using SuperLinq;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -50,28 +51,48 @@ public partial class MainViewModel : ObservableRecipient
             {
                 var frameNumber = (int)(MediaPosition.TotalSeconds * MediaFrameRate);
                 if (CropFrames.FirstOrDefault(x => x.FrameNumber == frameNumber) is { Rect: { Width: > 0, Height: > 0 } } cropFrame)
-                    return new(cropFrame.Rect, CropRectType.Frozen);
+                    return new(cropFrame.Rect, CropRectType.KeyFrame);
                 else
                 {
                     // extrapolate
-                    if (frameNumber > CropFrames[^1].FrameNumber && CropFrames.Count >= 2)
-                        return new(RectModel.Extrapolate(CropFrames[^2].Rect, CropFrames[^1].Rect,
-                            CropFrames[^1].FrameNumber - CropFrames[^2].FrameNumber,
-                            frameNumber - CropFrames[^1].FrameNumber), CropRectType.Interpolated);
-                    else if (frameNumber > CropFrames[^1].FrameNumber)
+                    if (frameNumber > CropFrames[^1].FrameNumber)
                         return new(CropFrames[^1].Rect, CropRectType.Interpolated);
 
                     // interpolate
                     if (CropFrames.TakeWhile(w => w.FrameNumber < frameNumber).Count() is { } idx
-                        && idx >= 0 && idx < CropFrames.Count - 1)
+                        && idx >= 0 && idx < CropFrames.Count)
                     {
-                        return new(RectModel.Interpolate(CropFrames[idx].Rect, CropFrames[idx + 1].Rect,
-                            (frameNumber - CropFrames[idx].FrameNumber) / (double)(CropFrames[idx + 1].FrameNumber - CropFrames[idx].FrameNumber)), CropRectType.Interpolated);
+                        return new(RectModel.Interpolate(CropFrames[idx - 1].Rect, CropFrames[idx].Rect,
+                            (frameNumber - CropFrames[idx - 1].FrameNumber) / (double)(CropFrames[idx].FrameNumber - CropFrames[idx - 1].FrameNumber)), CropRectType.Interpolated);
                     }
                 }
             }
 
             throw new InvalidOperationException();
+        }
+        set
+        {
+            if (MediaFrameRate == 0 || MediaDuration == default)
+                return;
+
+            var frameNumber = (int)(MediaPosition.TotalSeconds * MediaFrameRate);
+            var existingCropFrameIndex = CropFrames.FindIndex(x => x.FrameNumber == frameNumber);
+            if (existingCropFrameIndex < 0)
+            {
+                // materialize the crop frame
+                // Find the index to insert the new crop frame
+                int insertIndex = CropFrames.FindLastIndex(x => x.FrameNumber <= frameNumber);
+                if (insertIndex == -1)
+                    CropFrames.Insert(0, new(frameNumber, value.Rect));
+                else
+                    CropFrames.Insert(insertIndex + 1, new(frameNumber, value.Rect));
+                OnPropertyChanged(nameof(CurrentCropRect));
+            }
+            else if (CropFrames[existingCropFrameIndex].Rect != value.Rect)
+            {
+                CropFrames[existingCropFrameIndex] = new(frameNumber, value.Rect);
+                OnPropertyChanged(nameof(CurrentCropRect));
+            }
         }
     }
 
@@ -136,7 +157,7 @@ public readonly struct CropFrameEntry(int frameNumber, RectModel rect)
     public RectModel Rect { get; } = rect;
 }
 
-public enum CropRectType { None, FirstFrameUnfrozen, Frozen, Interpolated }
+public enum CropRectType { None, FirstFrameUnfrozen, KeyFrame, Interpolated }
 
 public readonly struct CropRect(RectModel rect, CropRectType type)
 {

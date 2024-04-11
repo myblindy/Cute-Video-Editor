@@ -22,12 +22,13 @@
 
         <MediaPlayerElement Grid.Row="1" x:Name="mediaPlayerElement" AreTransportControlsEnabled="False" AutoPlay="False"/>
         <controls:CropBoxControl Grid.Row="1" 
+                                 ViewModel="{x:Bind ViewModel}"
                                  Rectangle="{x:Bind ViewModel.CurrentCropRect, Mode=OneWay}"
                                  Margin="{x:Bind ViewModel.VideoOverlayMargins, Mode=OneWay}"
                                  OverlayScale="{x:Bind ViewModel.VideoOverlayScale, Mode=OneWay}"/>
 
         <controls:TimeBarHeaderControl Grid.Row="2" 
-                                End="{x:Bind ViewModel.MediaDuration, Mode=OneWay}"
-                                Position="{x:Bind ViewModel.MediaPosition, Mode=OneWay}"/>
+                                       End="{x:Bind ViewModel.MediaDuration, Mode=OneWay}"
+                                       Position="{x:Bind ViewModel.MediaPosition, Mode=OneWay}"/>
     </Grid>
 </Page>

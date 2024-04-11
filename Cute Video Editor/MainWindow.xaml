@@ -33,7 +33,7 @@
             </Grid.ColumnDefinitions>
 
             <Image Grid.Column="1" Source="/Assets/WindowIcon.ico"
-                   Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                   Width="24" Height="24" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
             <TabView Grid.Column="2"  x:Name="TabView" TabItemsSource="{x:Bind Tabs}"
                      SelectedItem="{x:Bind SelectedTab, Mode=TwoWay}"

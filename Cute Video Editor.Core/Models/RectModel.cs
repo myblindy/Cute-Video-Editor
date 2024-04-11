@@ -1,6 +1,7 @@
-﻿namespace CuteVideoEditor.Core.Models;
+﻿
+namespace CuteVideoEditor.Core.Models;
 
-public readonly struct RectModel
+public readonly struct RectModel : IEquatable<RectModel>
 {
     public readonly int CenterX, CenterY, Height, Width;
     public bool IsValid => Width > 0 && Height > 0;
@@ -19,4 +20,22 @@ public readonly struct RectModel
         r2.CenterY + (r2.CenterY - r1.CenterY) * frameDistance3 / frameDistanceBetween12,
         r2.Width + (r2.Width - r1.Width) * frameDistance3 / frameDistanceBetween12,
         r2.Height + (r2.Height - r1.Height) * frameDistance3 / frameDistanceBetween12);
+
+    public override bool Equals(object obj)
+    {
+        return obj is RectModel model && Equals(model);
+    }
+
+    public bool Equals(RectModel other)
+    {
+        return CenterX == other.CenterX &&
+               CenterY == other.CenterY &&
+               Height == other.Height &&
+               Width == other.Width &&
+               IsValid == other.IsValid;
+    }
+
+    public static bool operator ==(RectModel left, RectModel right) => left.Equals(right);
+
+    public static bool operator !=(RectModel left, RectModel right) => !(left == right);
 }
