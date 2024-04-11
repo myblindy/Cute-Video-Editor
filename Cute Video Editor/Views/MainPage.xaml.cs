@@ -25,6 +25,8 @@ public sealed partial class MainPage : Page
         ViewModel = mainViewModel;
         InitializeComponent();
 
+        Unloaded += (s, e) => frameTimer?.Dispose();
+
         // media player
         mediaPlayer = new()
         {
