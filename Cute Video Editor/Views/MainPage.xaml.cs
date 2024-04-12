@@ -5,6 +5,8 @@ using Windows.Media.Playback;
 using Windows.Storage;
 using FFmpegInteropX;
 using System.Reactive.Linq;
+using System.Diagnostics;
+using CuteVideoEditor.Core.Helpers;
 
 namespace CuteVideoEditor.Views;
 
@@ -12,7 +14,7 @@ public sealed partial class MainPage : Page
 {
     public MainViewModel ViewModel { get; }
 
-    readonly MediaPlayer mediaPlayer;
+    readonly MediaPlayer mediaPlayer = new();
     PeriodicTimer? frameTimer;
     FFmpegMediaSource? mediaSource;
 
@@ -24,21 +26,7 @@ public sealed partial class MainPage : Page
         Unloaded += (s, e) => frameTimer?.Dispose();
 
         // media player
-        mediaPlayer = new()
-        {
-            AudioCategory = MediaPlayerAudioCategory.Movie
-        };
-        mediaPlayer.PlaybackSession.PlaybackStateChanged += (s, e) => App.MainDispatcherQueue.TryEnqueue(() =>
-            ViewModel.MediaPlaybackState = s.PlaybackState);
-        mediaPlayer.MediaOpened += (s, e) =>
-        {
-        };
-        mediaPlayer.MediaFailed += (s, e) =>
-        {
-        };
-        mediaPlayerElement.SetMediaPlayer(mediaPlayer);
-        mediaPlayerElement.SizeChanged += (s, e) =>
-            ViewModel.VideoPlayerPixelSize = new((int)mediaPlayerElement.ActualWidth, (int)mediaPlayerElement.ActualHeight);
+        InitializeMediaPlayer();
 
         // view model controlling the media player
         ViewModel.WhenAnyValue(x => x.MediaPlaybackState).Subscribe(state =>
@@ -53,6 +41,8 @@ public sealed partial class MainPage : Page
                     break;
             }
         });
+        ViewModel.UpdateMediaPosition += position =>
+            mediaPlayer.PlaybackSession.Position = position.Clamp(TimeSpan.Zero, ViewModel.MediaDuration);
 
         // load media on demand
         ViewModel.WhenAnyValue(x => x.MediaFileName).Subscribe(async mediaFileName =>
@@ -87,12 +77,22 @@ public sealed partial class MainPage : Page
         });
     }
 
-    private void Page_PreviewKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+    private void InitializeMediaPlayer()
     {
-        if (e.Key == Windows.System.VirtualKey.Space)
-            if (ViewModel.MediaPlaybackState is MediaPlaybackState.Playing)
-                ViewModel.PauseCommand.Execute(null);
-            else
-                ViewModel.PlayCommand.Execute(null);
+        mediaPlayer.AudioCategory = MediaPlayerAudioCategory.Movie;
+        mediaPlayer.PlaybackSession.PlaybackStateChanged += (s, e) => App.MainDispatcherQueue.TryEnqueue(() =>
+            ViewModel.MediaPlaybackState = s.PlaybackState);
+        mediaPlayer.MediaOpened += (s, e) =>
+        {
+        };
+        mediaPlayer.MediaFailed += (s, e) =>
+        {
+        };
+        mediaPlayer.SourceChanged += (s, e) =>
+        {
+        };
+        mediaPlayerElement.SetMediaPlayer(mediaPlayer);
+        mediaPlayerElement.SizeChanged += (s, e) =>
+            ViewModel.VideoPlayerPixelSize = new((int)mediaPlayerElement.ActualWidth, (int)mediaPlayerElement.ActualHeight);
     }
 }

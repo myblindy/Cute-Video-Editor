@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:controls="using:CuteVideoEditor.Views.Controls"
     Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-    mc:Ignorable="d" PreviewKeyDown="Page_PreviewKeyDown">
+    mc:Ignorable="d">
 
     <Grid RowSpacing="5">
         <Grid.RowDefinitions>
@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <CommandBar Grid.Row="0" OverflowButtonVisibility="Collapsed">
-            <AppBarButton Icon="Save" Label="Save Project" Command="{x:Bind ViewModel.SaveProjectCommand}"/>
+            <AppBarButton Icon="Save" Label="Save Project" ToolTipService.ToolTip="Save Project" Command="{x:Bind ViewModel.SaveProjectCommand}"/>
             <AppBarSeparator/>
             <AppBarButton Icon="Play" Label="Play" Command="{x:Bind ViewModel.PlayCommand}"/>
             <AppBarButton Icon="Pause" Label="Pause" Command="{x:Bind ViewModel.PauseCommand}"/>

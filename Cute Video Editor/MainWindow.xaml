@@ -35,8 +35,9 @@
             <Image Grid.Column="1" Source="/Assets/WindowIcon.ico"
                    Width="24" Height="24" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-            <TabView Grid.Column="2"  x:Name="TabView" TabItemsSource="{x:Bind Tabs}"
-                     SelectedItem="{x:Bind SelectedTab, Mode=TwoWay}"
+            <TabView Grid.Column="2"  x:Name="TabView" IsTabStop="False" AllowFocusOnInteraction="False" IsFocusEngagementEnabled="False"
+                     TabItemsSource="{x:Bind Tabs}" SelectedItem="{x:Bind SelectedTab, Mode=TwoWay}"
+                     VerticalAlignment="Bottom"
                      AddTabButtonClick="TabView_AddTabButtonClick" TabCloseRequested="TabView_TabCloseRequested">
                 <TabView.TabItemTemplate>
                     <DataTemplate x:DataType="local:MainWindowTabEntry">
@@ -44,9 +45,10 @@
                     </DataTemplate>
                 </TabView.TabItemTemplate>
             </TabView>
-
-            <TextBlock Grid.Column="4" x:Name="AppTitleBarText" VerticalAlignment="Center" HorizontalAlignment="Center"
-                       TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"/>
+            <Border  Grid.Column="4" x:Name="AppTitleBarBorder" VerticalAlignment="Center" HorizontalAlignment="Center"
+                     CornerRadius="6" Padding="6" Background="{StaticResource SystemFillColorSolidNeutralBackgroundBrush}">
+                <TextBlock x:Name="AppTitleBarText" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"/>
+            </Border>
         </Grid>
 
         <ItemsControl Grid.Row="1" ItemsSource="{x:Bind Tabs}">

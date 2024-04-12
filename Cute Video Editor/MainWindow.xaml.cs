@@ -3,6 +3,7 @@ using CuteVideoEditor.Helpers;
 using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.Views;
+using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
@@ -12,6 +13,9 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using Windows.Foundation;
 using Windows.UI.ViewManagement;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace CuteVideoEditor;
 
@@ -75,13 +79,36 @@ public sealed partial class MainWindow : WindowEx
         new(_X: (int)Math.Round(bounds.X * scale), _Y: (int)Math.Round(bounds.Y * scale),
             _Width: (int)Math.Round(bounds.Width * scale), _Height: (int)Math.Round(bounds.Height * scale));
 
+    UnhookWindowsHookExSafeHandle hookHandle;
+    HOOKPROC keyboardHookProc;
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
         if (App.AppTitlebar is null)
         {
-            App.AppTitlebar = AppTitleBarText;
+            App.AppTitlebar = AppTitleBarBorder;
             TitleBarHelper.ApplySystemThemeToCaptionButtons();
+
+            keyboardHookProc = new(KeyboardHookProc);
+            hookHandle = PInvoke.SetWindowsHookEx(WINDOWS_HOOK_ID.WH_KEYBOARD, keyboardHookProc, null, PInvoke.GetCurrentThreadId());
         }
+    }
+
+    private LRESULT KeyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
+    {
+        // perhaps this would be better to send the key data, and have the vm handle it? 
+        // or the page?
+
+        MainViewModel? GetActiveViewModel() => SelectedTab?.Page.ViewModel;
+
+        if (code >= 0)
+        {
+            var up = (lParam & 0x80000000) != 0;
+            var vk = (Windows.System.VirtualKey)(nuint)wParam;
+            if (GetActiveViewModel()?.ProcessKey(vk, up) is true)
+                return default;
+        }
+
+        return PInvoke.CallNextHookEx(hookHandle, code, wParam, lParam);
     }
 
     private void Settings_ColorValuesChanged(UISettings sender, object args) =>
