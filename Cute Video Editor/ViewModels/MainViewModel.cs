@@ -8,11 +8,18 @@ using System.ComponentModel;
 using System.Reactive.Linq;
 using Windows.Media.Playback;
 using SuperLinq;
+using CuteVideoEditor.Services;
+using System.Text.Json;
+using DynamicData;
+using AutoMapper;
 
 namespace CuteVideoEditor.ViewModels;
 
 public partial class MainViewModel : ObservableRecipient
 {
+    private readonly DialogService dialogService;
+    private readonly IMapper mapper;
+
     [ObservableProperty]
     string? mediaFileName;
 
@@ -39,9 +46,9 @@ public partial class MainViewModel : ObservableRecipient
     public Thickness VideoOverlayMargins { get; private set; }
     public double VideoOverlayScale { get; private set; }
 
-    public ObservableCollection<CropFrameEntry> CropFrames = [];
+    public ObservableCollection<CropFrameEntryModel> CropFrames = [];
 
-    public CropRect CurrentCropRect
+    public CropRectModel CurrentCropRect
     {
         get
         {
@@ -119,8 +126,24 @@ public partial class MainViewModel : ObservableRecipient
     void Play() => MediaPlaybackState = MediaPlaybackState.Playing;
     bool CanPlay() => MediaPlaybackState is not MediaPlaybackState.Playing;
 
-    public MainViewModel()
+    [RelayCommand]
+    async Task SaveProject()
     {
+        if (await dialogService.SelectSaveProjectFileAsync() is { } projectFileName)
+        {
+            using var outputFile = File.Create(projectFileName);
+            await JsonSerializer.SerializeAsync(outputFile, new SerializationModel
+            {
+                MediaFileName = MediaFileName!,
+                CropFrames = mapper.Map<List<CropFrameEntrySerializationModel>>(CropFrames)
+            });
+        }
+    }
+
+    public MainViewModel(DialogService dialogService, IMapper mapper)
+    {
+        this.dialogService = dialogService;
+        this.mapper = mapper;
         this.WhenAnyValue(x => x.MediaPixelSize, x => x.VideoPlayerPixelSize)
             .Subscribe(((SizeModel MediaPixelSize, SizeModel VideoPlayerPixelSize) w) =>
             {
@@ -149,18 +172,23 @@ public partial class MainViewModel : ObservableRecipient
                 OnPropertyChanged(nameof(VideoOverlayScale));
             });
     }
-}
 
-public readonly struct CropFrameEntry(int frameNumber, RectModel rect)
-{
-    public int FrameNumber { get; } = frameNumber;
-    public RectModel Rect { get; } = rect;
-}
+    public void LoadProjectFile(string projectFileName)
+    {
+        CropFrames.Clear();
+        using (var inputFile = File.OpenRead(projectFileName))
+            try
+            {
+                if (JsonSerializer.Deserialize<SerializationModel>(inputFile) is { } model)
+                {
+                    MediaFileName = model.MediaFileName;
+                    CropFrames.AddRange(mapper.Map<List<CropFrameEntryModel>>(model.CropFrames));
+                    return;
+                }
+            }
+            catch (JsonException) { }
 
-public enum CropRectType { None, FirstFrameUnfrozen, KeyFrame, Interpolated }
-
-public readonly struct CropRect(RectModel rect, CropRectType type)
-{
-    public RectModel Rect { get; } = rect;
-    public CropRectType Type { get; } = type;
+        // if we couldn't parse it as a project file, load it as a video file
+        MediaFileName = projectFileName;
+    }
 }

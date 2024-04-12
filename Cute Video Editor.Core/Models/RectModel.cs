@@ -35,6 +35,8 @@ public readonly struct RectModel : IEquatable<RectModel>
                IsValid == other.IsValid;
     }
 
+    public override int GetHashCode() => HashCode.Combine(CenterX, CenterY, Height, Width);
+
     public static bool operator ==(RectModel left, RectModel right) => left.Equals(right);
 
     public static bool operator !=(RectModel left, RectModel right) => !(left == right);

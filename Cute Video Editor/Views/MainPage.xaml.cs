@@ -1,14 +1,10 @@
 ﻿using CuteVideoEditor.ViewModels;
-
 using Microsoft.UI.Xaml.Controls;
 using ReactiveUI;
 using Windows.Media.Playback;
 using Windows.Storage;
-
 using FFmpegInteropX;
 using System.Reactive.Linq;
-using Windows.UI.Core;
-using System.Diagnostics;
 
 namespace CuteVideoEditor.Views;
 

@@ -21,13 +21,13 @@
                 <DataTemplate x:DataType="local:TimeBarHeaderControlTickEntry">
                     <Grid>
                         <Grid.RenderTransform>
-                            <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(TimeSpan, TimeBarHeader)}" Y="10"/>
+                            <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(TimeSpan, TimeBarHeader)}" Y="0"/>
                         </Grid.RenderTransform>
 
                         <TextBlock Text="{x:Bind DisplayText}" Foreground="#ccc" FontSize="10"/>
                         <Line Y2="{x:Bind local:TimeBarHeaderControl.GetTickHeight(Multiplier)}" Stroke="#555">
                             <Line.RenderTransform>
-                                <TranslateTransform X="-3" Y="-10"/>
+                                <TranslateTransform X="-3" Y="0"/>
                             </Line.RenderTransform>
                         </Line>
                     </Grid>

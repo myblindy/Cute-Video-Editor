@@ -75,8 +75,14 @@ public sealed partial class MainWindow : WindowEx
         new(_X: (int)Math.Round(bounds.X * scale), _Y: (int)Math.Round(bounds.Y * scale),
             _Width: (int)Math.Round(bounds.Width * scale), _Height: (int)Math.Round(bounds.Height * scale));
 
-    private void MainWindow_Activated(object sender, WindowActivatedEventArgs args) =>
-        App.AppTitlebar = AppTitleBarText;
+    private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+    {
+        if (App.AppTitlebar is null)
+        {
+            App.AppTitlebar = AppTitleBarText;
+            TitleBarHelper.ApplySystemThemeToCaptionButtons();
+        }
+    }
 
     private void Settings_ColorValuesChanged(UISettings sender, object args) =>
         App.MainDispatcherQueue.TryEnqueue(TitleBarHelper.ApplySystemThemeToCaptionButtons);
@@ -87,7 +93,7 @@ public sealed partial class MainWindow : WindowEx
         {
             using var scope = App.GetService<IServiceScopeFactory>().CreateScope();
             var tabPage = scope.ServiceProvider.GetRequiredService<MainPage>();
-            tabPage.ViewModel.MediaFileName = mediaFileName;
+            tabPage.ViewModel.LoadProjectFile(mediaFileName);
 
             MainWindowTabEntry tabEntry = new(tabPage, this);
             Tabs.Add(tabEntry);

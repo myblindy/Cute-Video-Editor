@@ -23,13 +23,13 @@
         </Canvas.Resources>
 
         <Canvas.RenderTransform>
-            <TranslateTransform X="{x:Bind local:CropBoxControl.GetX(Rectangle, OverlayScale), Mode=OneWay}"
-                                Y="{x:Bind local:CropBoxControl.GetY(Rectangle, OverlayScale), Mode=OneWay}"/>
+            <TranslateTransform X="{x:Bind local:CropBoxControl.GetX(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
+                                Y="{x:Bind local:CropBoxControl.GetY(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"/>
         </Canvas.RenderTransform>
 
         <!-- shadow -->
-        <Rectangle Width="{x:Bind local:CropBoxControl.GetShadowWidth(Rectangle, OverlayScale), Mode=OneWay}"
-                   Height="{x:Bind local:CropBoxControl.GetShadowHeight(Rectangle, OverlayScale), Mode=OneWay}"
+        <Rectangle Width="{x:Bind local:CropBoxControl.GetShadowWidth(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
+                   Height="{x:Bind local:CropBoxControl.GetShadowHeight(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
                    Style="{StaticResource BoxLineShadowStyle}">
             <Rectangle.RenderTransform>
                 <TranslateTransform X="-1" Y="-1"/>
@@ -37,9 +37,9 @@
         </Rectangle>
 
         <!-- foreground -->
-        <Rectangle Width="{x:Bind local:CropBoxControl.GetWidth(Rectangle, OverlayScale), Mode=OneWay}"
-                   Height="{x:Bind local:CropBoxControl.GetHeight(Rectangle, OverlayScale), Mode=OneWay}"
+        <Rectangle Width="{x:Bind local:CropBoxControl.GetWidth(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
+                   Height="{x:Bind local:CropBoxControl.GetHeight(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
                    Style="{StaticResource BoxLineStyle}"
-                   Stroke="{x:Bind local:CropBoxControl.GetBrush(Rectangle), Mode=OneWay}"/>
+                   Stroke="{x:Bind local:CropBoxControl.GetBrush(ViewModel.CurrentCropRect), Mode=OneWay}"/>
     </Canvas>
 </UserControl>

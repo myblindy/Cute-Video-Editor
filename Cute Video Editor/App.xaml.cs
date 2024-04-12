@@ -1,5 +1,6 @@
 ﻿using CuteVideoEditor.Activation;
 using CuteVideoEditor.Contracts.Services;
+using CuteVideoEditor.Core.Models;
 using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.Views;
@@ -57,6 +58,9 @@ public partial class App : Application
                 // Views and ViewModels
                 services.AddScoped<MainViewModel>();
                 services.AddScoped<MainPage>();
+
+                // Mapper
+                services.AddAutoMapper(typeof(SerializationMapperProfile));
 
                 // Configuration
             })
