@@ -44,7 +44,7 @@ public partial class MainViewModel : ObservableRecipient
     [NotifyPropertyChangedFor(nameof(VideoOverlayMargins))]
     SizeModel videoPlayerPixelSize;
 
-    public event Action<TimeSpan> UpdateMediaPosition;
+    public event Action<TimeSpan>? UpdateMediaPosition;
 
     public Thickness VideoOverlayMargins { get; private set; }
     public double VideoOverlayScale { get; private set; }
@@ -130,7 +130,7 @@ public partial class MainViewModel : ObservableRecipient
     bool CanPlay() => MediaPlaybackState is not MediaPlaybackState.Playing;
 
     [RelayCommand]
-    async Task SaveProject()
+    async Task SaveProjectAsync()
     {
         if (await dialogService.SelectSaveProjectFileAsync() is { } projectFileName)
         {
@@ -141,6 +141,12 @@ public partial class MainViewModel : ObservableRecipient
                 CropFrames = mapper.Map<List<CropFrameEntrySerializationModel>>(CropFrames)
             });
         }
+    }
+
+    [RelayCommand]
+    async Task ExportVideoAsync()
+    {
+
     }
 
     public MainViewModel(DialogService dialogService, IMapper mapper)

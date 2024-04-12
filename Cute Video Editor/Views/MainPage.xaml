@@ -16,7 +16,10 @@
         </Grid.RowDefinitions>
 
         <CommandBar Grid.Row="0" OverflowButtonVisibility="Collapsed">
-            <AppBarButton Icon="Save" Label="Save Project" ToolTipService.ToolTip="Save Project" Command="{x:Bind ViewModel.SaveProjectCommand}"/>
+            <AppBarButton Icon="Save" AccessKey="S" Label="Save Project" ToolTipService.ToolTip="Save Project" 
+                          Command="{x:Bind ViewModel.SaveProjectCommand}"/>
+            <AppBarButton Icon="Video" AccessKey="E" Label="Export Video" ToolTipService.ToolTip="Export Video"
+                          Command="{x:Bind ViewModel.ExportVideoCommand}"/>
             <AppBarSeparator/>
             <AppBarButton Icon="Play" Label="Play" Command="{x:Bind ViewModel.PlayCommand}"/>
             <AppBarButton Icon="Pause" Label="Pause" Command="{x:Bind ViewModel.PauseCommand}"/>

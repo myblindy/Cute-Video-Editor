@@ -63,6 +63,10 @@
     </Page>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Dialogs\" />
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>

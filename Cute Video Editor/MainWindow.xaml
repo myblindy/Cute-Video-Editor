@@ -45,8 +45,8 @@
                     </DataTemplate>
                 </TabView.TabItemTemplate>
             </TabView>
-            <Border  Grid.Column="4" x:Name="AppTitleBarBorder" VerticalAlignment="Center" HorizontalAlignment="Center"
-                     CornerRadius="6" Padding="6" Background="{StaticResource SystemFillColorSolidNeutralBackgroundBrush}">
+            <Border Grid.Column="4" x:Name="AppTitleBarBorder" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    CornerRadius="6" Padding="6" Background="{StaticResource SystemFillColorSolidNeutralBackgroundBrush}">
                 <TextBlock x:Name="AppTitleBarText" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"/>
             </Border>
         </Grid>
