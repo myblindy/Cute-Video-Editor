@@ -1,0 +1,4 @@
+SetWindowsHookEx
+UnhookWindowsHookEx
+CallNextHookEx
+GetCurrentThreadId

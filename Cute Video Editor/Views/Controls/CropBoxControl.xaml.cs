@@ -70,6 +70,7 @@ public sealed partial class CropBoxControl : UserControl
     {
         if (dragStartPoint.HasValue && e.Pointer.PointerDeviceType is PointerDeviceType.Mouse)
         {
+            ReleasePointerCapture(e.Pointer);
             dragStartPoint = null;
             e.Handled = true;
         }
@@ -95,11 +96,15 @@ public sealed partial class CropBoxControl : UserControl
                 {
                     // update the crop rect, this will automatically materialize the frame for us if necessary
                     var currentCropRect = ViewModel!.CurrentCropRect;
-                    ViewModel.CurrentCropRect = new(new(
+                    var newRectModel = new RectModel(
                         (int)(cropRectangleBeforeDrag.CenterX + (pt.Position.X - dragStartPoint.Value.X) / ViewModel.VideoOverlayScale),
                         (int)(cropRectangleBeforeDrag.CenterY + (pt.Position.Y - dragStartPoint.Value.Y) / ViewModel.VideoOverlayScale),
                         currentCropRect.Rect.Width,
-                        currentCropRect.Rect.Height), currentCropRect.Type);
+                        currentCropRect.Rect.Height);
+                    newRectModel = newRectModel.Clamp(new RectModel(
+                        ViewModel.MediaPixelSize.Width / 2, ViewModel.MediaPixelSize.Height / 2,
+                        ViewModel.MediaPixelSize.Width, ViewModel.MediaPixelSize.Height));
+                    ViewModel.CurrentCropRect = new(newRectModel, currentCropRect.Type);
                 }
 
                 // set the move cursor

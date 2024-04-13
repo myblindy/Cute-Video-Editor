@@ -12,6 +12,7 @@ using CuteVideoEditor.Services;
 using System.Text.Json;
 using DynamicData;
 using AutoMapper;
+using Windows.System;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -42,6 +43,8 @@ public partial class MainViewModel : ObservableRecipient
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VideoOverlayMargins))]
     SizeModel videoPlayerPixelSize;
+
+    public event Action<TimeSpan>? UpdateMediaPosition;
 
     public Thickness VideoOverlayMargins { get; private set; }
     public double VideoOverlayScale { get; private set; }
@@ -127,7 +130,7 @@ public partial class MainViewModel : ObservableRecipient
     bool CanPlay() => MediaPlaybackState is not MediaPlaybackState.Playing;
 
     [RelayCommand]
-    async Task SaveProject()
+    async Task SaveProjectAsync()
     {
         if (await dialogService.SelectSaveProjectFileAsync() is { } projectFileName)
         {
@@ -138,6 +141,12 @@ public partial class MainViewModel : ObservableRecipient
                 CropFrames = mapper.Map<List<CropFrameEntrySerializationModel>>(CropFrames)
             });
         }
+    }
+
+    [RelayCommand]
+    async Task ExportVideoAsync()
+    {
+
     }
 
     public MainViewModel(DialogService dialogService, IMapper mapper)
@@ -190,5 +199,31 @@ public partial class MainViewModel : ObservableRecipient
 
         // if we couldn't parse it as a project file, load it as a video file
         MediaFileName = projectFileName;
+    }
+
+    void TogglePlayPause()
+    {
+        if (MediaPlaybackState is MediaPlaybackState.Playing)
+            MediaPlaybackState = MediaPlaybackState.Paused;
+        else
+            MediaPlaybackState = MediaPlaybackState.Playing;
+    }
+
+    internal bool ProcessKey(VirtualKey key, bool up)
+    {
+        switch ((key, up))
+        {
+            case (VirtualKey.Space, true):
+                TogglePlayPause();
+                return true;
+            case (VirtualKey.Left, false):
+                UpdateMediaPosition?.Invoke(MediaPosition - TimeSpan.FromSeconds(1 / MediaFrameRate));
+                return true;
+            case (VirtualKey.Right, false):
+                UpdateMediaPosition?.Invoke(MediaPosition + TimeSpan.FromSeconds(1 / MediaFrameRate));
+                return true;
+        }
+
+        return false;
     }
 }
