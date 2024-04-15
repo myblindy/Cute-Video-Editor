@@ -4,7 +4,7 @@ using CuteVideoEditor.Core.Models;
 using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.Views;
-
+using FFmpegInteropX;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Dispatching;
@@ -67,6 +67,16 @@ public partial class App : Application
             .Build();
 
         UnhandledException += App_UnhandledException;
+
+        using var transcode = new FFmpegTranscode();
+        transcode.Run(new(@"D:\temp\sn06.mkv", 0, []), new()
+        {
+            FileName = @"d:\temp\test-cve.webm",
+            Type = OutputType.Vp8,
+            FrameRate = 30,
+            Bitrate = 1000000,
+            PixelSize = new(80, 80),
+        });
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
