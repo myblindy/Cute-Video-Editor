@@ -4,7 +4,7 @@ using CuteVideoEditor.Core.Models;
 using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.Views;
-
+using FFmpegInteropX;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Dispatching;
@@ -67,6 +67,16 @@ public partial class App : Application
             .Build();
 
         UnhandledException += App_UnhandledException;
+
+        using FFmpegTranscode transcode = new();
+        transcode.Run(new(@"C:\Users\miteam\Downloads\123941-655.mp4", 0, [new(new(60, 60, 40, 40), 0)]), new()
+        {
+            FileName = @"C:\Users\miteam\Downloads\meow_out.webm",
+            FrameRate = 30,
+            Bitrate = 1000000,
+            PixelSize = new(40, 40),
+            Type = OutputType.Vp8
+        });
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

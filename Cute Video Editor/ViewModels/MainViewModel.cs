@@ -147,9 +147,6 @@ public partial class MainViewModel : ObservableRecipient
     [RelayCommand]
     async Task ExportVideoAsync()
     {
-        using FFmpegTranscode transcode = new();
-        transcode.Run(new(MediaFileName, 0),
-            new("output.mp4"));
     }
 
     public MainViewModel(DialogService dialogService, IMapper mapper)
