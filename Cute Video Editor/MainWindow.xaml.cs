@@ -79,8 +79,8 @@ public sealed partial class MainWindow : WindowEx
         new(_X: (int)Math.Round(bounds.X * scale), _Y: (int)Math.Round(bounds.Y * scale),
             _Width: (int)Math.Round(bounds.Width * scale), _Height: (int)Math.Round(bounds.Height * scale));
 
-    UnhookWindowsHookExSafeHandle hookHandle;
-    HOOKPROC keyboardHookProc;
+    UnhookWindowsHookExSafeHandle? hookHandle;
+    HOOKPROC? keyboardHookProc;
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
         if (App.AppTitlebar is null)

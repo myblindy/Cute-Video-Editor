@@ -13,6 +13,7 @@ using System.Text.Json;
 using DynamicData;
 using AutoMapper;
 using Windows.System;
+using FFmpegInteropX;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -146,7 +147,9 @@ public partial class MainViewModel : ObservableRecipient
     [RelayCommand]
     async Task ExportVideoAsync()
     {
-
+        using FFmpegTranscode transcode = new();
+        transcode.Run(new(MediaFileName, 0),
+            new("output.mp4"));
     }
 
     public MainViewModel(DialogService dialogService, IMapper mapper)
