@@ -7,6 +7,7 @@ using CuteVideoEditor.Views;
 using FFmpegInteropX;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Windows.UI.Core;
@@ -52,6 +53,7 @@ public partial class App : Application
                 services.AddSingleton<IPageService, PageService>();
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<DialogService>();
+                services.AddSingleton<FFmpegLogProvider>();
 
                 // Core Services
 
@@ -64,9 +66,13 @@ public partial class App : Application
 
                 // Configuration
             })
+            .ConfigureLogging(context =>
+                context.AddDebug())
             .Build();
 
         UnhandledException += App_UnhandledException;
+
+        FFmpegInteropLogging.SetLogProvider(GetService<FFmpegLogProvider>());
 
         using var transcode = new FFmpegTranscode();
         transcode.Run(new(@"D:\temp\sn06.mkv", 0, []), new()
@@ -74,7 +80,7 @@ public partial class App : Application
             FileName = @"d:\temp\test-cve.webm",
             Type = OutputType.Vp8,
             FrameRate = 30,
-            Bitrate = 1000000,
+            Bitrate = 20 * 1024 * 1204,
             PixelSize = new(80, 80),
         });
     }
@@ -89,4 +95,17 @@ public partial class App : Application
 
         await GetService<IActivationService>().ActivateAsync(args);
     }
+}
+
+class FFmpegLogProvider(ILogger<FFmpegLogProvider> logger) : ILogProvider
+{
+    public void Log(FFmpegInteropX.LogLevel level, string message) =>
+        logger.Log(level switch
+        {
+            FFmpegInteropX.LogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
+            FFmpegInteropX.LogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
+            FFmpegInteropX.LogLevel.Info => Microsoft.Extensions.Logging.LogLevel.Information,
+            FFmpegInteropX.LogLevel.Verbose => Microsoft.Extensions.Logging.LogLevel.Trace,
+            _ => Microsoft.Extensions.Logging.LogLevel.Debug
+        }, message);
 }
