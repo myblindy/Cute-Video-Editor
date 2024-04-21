@@ -1,8 +1,9 @@
-﻿using Windows.Storage.Pickers;
+﻿using CuteVideoEditor.Contracts.Services;
+using Windows.Storage.Pickers;
 
 namespace CuteVideoEditor.Services;
 
-public class DialogService
+public class DialogService : IDialogService
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Service")]
     public async Task<string?> SelectVideoFileAsync()

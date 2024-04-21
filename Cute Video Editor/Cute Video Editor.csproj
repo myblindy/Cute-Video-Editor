@@ -16,13 +16,10 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Views\Controls\CropBoxControl.xaml" />
-    <None Remove="Views\Controls\TimeBarHeaderControl.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
+    <InternalsVisibleTo Include="$(AssemblyName).VmTests"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
@@ -48,18 +45,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Cute Video Editor.Core\Cute Video Editor.Core.csproj" />
     <ProjectReference Include="..\FFmpegInteropX\Source\FFmpegInteropX.DotNet.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\Controls\CropBoxControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\Controls\TimeBarHeaderControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 
   <ItemGroup>

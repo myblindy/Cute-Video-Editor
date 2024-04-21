@@ -2,6 +2,12 @@
 
 namespace CuteVideoEditor.Core.Models;
 
+public class TrimmingMarkerSerializationModel
+{
+    public long FrameNumber { get; set; }
+    public bool TrimAfter { get; set; }
+}
+
 public class RectSerializationModel
 {
     public int CenterX { get; set; }
@@ -20,6 +26,7 @@ public class SerializationModel
 {
     public string? MediaFileName { get; set; }
     public List<CropFrameEntrySerializationModel>? CropFrames { get; set; }
+    public List<TrimmingMarkerSerializationModel>? TrimmingMarkers { get; set; }
 }
 
 public class SerializationMapperProfile : Profile
@@ -27,6 +34,7 @@ public class SerializationMapperProfile : Profile
     public SerializationMapperProfile()
     {
         CreateMap<RectModel, RectSerializationModel>().ReverseMap();
-        CreateMap<CropFrameEntrySerializationModel, CropFrameEntryModel>().ReverseMap();
+        CreateMap<CropFrameEntryModel, CropFrameEntrySerializationModel>().ReverseMap();
+        CreateMap<TrimmingMarkerModel, TrimmingMarkerSerializationModel>().ReverseMap();
     }
 }

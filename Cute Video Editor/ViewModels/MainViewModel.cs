@@ -14,28 +14,32 @@ using DynamicData;
 using AutoMapper;
 using Windows.System;
 using FFmpegInteropX;
+using CuteVideoEditor.Contracts.Services;
 
 namespace CuteVideoEditor.ViewModels;
 
 public partial class MainViewModel : ObservableRecipient
 {
-    private readonly DialogService dialogService;
+    private readonly IDialogService dialogService;
     private readonly IMapper mapper;
 
     [ObservableProperty]
     string? mediaFileName;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentCropRect))]
+    [NotifyPropertyChangedFor(nameof(CurrentCropRect), nameof(OutputMediaDuration), nameof(OutputMediaPosition),
+        nameof(CurrentInputFrameNumber), nameof(CurrentOutputFrameNumber))]
     TimeSpan mediaDuration;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentCropRect))]
+    [NotifyPropertyChangedFor(nameof(CurrentCropRect), nameof(OutputMediaDuration), nameof(OutputMediaPosition),
+        nameof(CurrentInputFrameNumber), nameof(CurrentOutputFrameNumber))]
     double mediaFrameRate;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentCropRect))]
-    TimeSpan mediaPosition;
+    [NotifyPropertyChangedFor(nameof(CurrentCropRect), nameof(CurrentInputFrameNumber), nameof(OutputMediaPosition),
+        nameof(CurrentOutputFrameNumber))]
+    TimeSpan inputMediaPosition;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VideoOverlayMargins))]
@@ -51,6 +55,53 @@ public partial class MainViewModel : ObservableRecipient
     public double VideoOverlayScale { get; private set; }
 
     public ObservableCollection<CropFrameEntryModel> CropFrames = [];
+    public ObservableCollection<TrimmingMarkerModel> TrimmingMarkers = [new(0)];
+
+    long CurrentInputFrameNumber => (long)(InputMediaPosition.TotalSeconds * MediaFrameRate);
+    long CurrentOutputFrameNumber
+    {
+        get
+        {
+            // return the frame number ignoring all the active trimming markers
+            var inputFrameNumber = CurrentInputFrameNumber;
+            var frameNumber = 0L;
+            for (var i = 0; i < TrimmingMarkers.Count; ++i)
+                if (TrimmingMarkers[i].FrameNumber <= inputFrameNumber)
+                {
+                    var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
+                        i == TrimmingMarkers.Count - 1 ? MediaDuration.TotalSeconds * MediaFrameRate : TrimmingMarkers[i + 1].FrameNumber);
+                    frameNumber += !TrimmingMarkers[i].TrimAfter
+                        ? (long)Math.Min(inputFrameNumber - frameStart, frameEnd - frameStart)
+                        : 0;
+                }
+                else
+                    break;
+
+            return frameNumber;
+        }
+    }
+
+    public TimeSpan OutputMediaDuration
+    {
+        get
+        {
+
+            // calculate the frame count ignoring all the active trimming markers
+            var totalFrameCount = (long)(MediaDuration.TotalSeconds * MediaFrameRate);
+            var frameCount = totalFrameCount;
+            for (var i = 0; i < TrimmingMarkers.Count; ++i)
+                if (TrimmingMarkers[i].TrimAfter)
+                {
+                    var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
+                        i == TrimmingMarkers.Count - 1 ? totalFrameCount : TrimmingMarkers[i + 1].FrameNumber);
+                    frameCount -= frameEnd - frameStart;
+                }
+            return TimeSpan.FromSeconds(frameCount / MediaFrameRate);
+        }
+    }
+
+    public TimeSpan OutputMediaPosition =>
+        TimeSpan.FromSeconds(CurrentOutputFrameNumber / MediaFrameRate);
 
     public CropRectModel CurrentCropRect
     {
@@ -60,7 +111,7 @@ public partial class MainViewModel : ObservableRecipient
                 return new(default, CropRectType.None);
             else
             {
-                var frameNumber = (int)(MediaPosition.TotalSeconds * MediaFrameRate);
+                var frameNumber = CurrentOutputFrameNumber;
                 if (CropFrames.FirstOrDefault(x => x.FrameNumber == frameNumber) is { Rect: { Width: > 0, Height: > 0 } } cropFrame)
                     return new(cropFrame.Rect, CropRectType.KeyFrame);
                 else
@@ -86,7 +137,7 @@ public partial class MainViewModel : ObservableRecipient
             if (MediaFrameRate == 0 || MediaDuration == default)
                 return;
 
-            var frameNumber = (int)(MediaPosition.TotalSeconds * MediaFrameRate);
+            var frameNumber = CurrentOutputFrameNumber;
             var existingCropFrameIndex = CropFrames.FindIndex(x => x.FrameNumber == frameNumber);
             if (existingCropFrameIndex < 0)
             {
@@ -145,11 +196,20 @@ public partial class MainViewModel : ObservableRecipient
     }
 
     [RelayCommand]
+    void AddMarker()
+    {
+        var frameNumber = CurrentInputFrameNumber;
+        var insertIndex = TrimmingMarkers.FindLastIndex(x => x.FrameNumber <= frameNumber);
+        if (TrimmingMarkers[insertIndex].FrameNumber == frameNumber) return;
+        TrimmingMarkers.Insert(insertIndex + 1, new(frameNumber));
+    }
+
+    [RelayCommand]
     async Task ExportVideoAsync()
     {
     }
 
-    public MainViewModel(DialogService dialogService, IMapper mapper)
+    public MainViewModel(IDialogService dialogService, IMapper mapper)
     {
         this.dialogService = dialogService;
         this.mapper = mapper;
@@ -217,10 +277,10 @@ public partial class MainViewModel : ObservableRecipient
                 TogglePlayPause();
                 return true;
             case (VirtualKey.Left, false):
-                UpdateMediaPosition?.Invoke(MediaPosition - TimeSpan.FromSeconds(1 / MediaFrameRate));
+                UpdateMediaPosition?.Invoke(InputMediaPosition - TimeSpan.FromSeconds(1 / MediaFrameRate));
                 return true;
             case (VirtualKey.Right, false):
-                UpdateMediaPosition?.Invoke(MediaPosition + TimeSpan.FromSeconds(1 / MediaFrameRate));
+                UpdateMediaPosition?.Invoke(InputMediaPosition + TimeSpan.FromSeconds(1 / MediaFrameRate));
                 return true;
         }
 

@@ -66,7 +66,7 @@ public sealed partial class MainPage : Page
                 async Task FrameTimerHandler(PeriodicTimer timer)
                 {
                     while (await timer.WaitForNextTickAsync().ConfigureAwait(false))
-                        App.MainDispatcherQueue.TryEnqueue(() => ViewModel.MediaPosition = mediaPlayer.PlaybackSession.Position);
+                        App.MainDispatcherQueue.TryEnqueue(() => ViewModel.InputMediaPosition = mediaPlayer.PlaybackSession.Position);
                 }
                 _ = FrameTimerHandler(frameTimer);
 

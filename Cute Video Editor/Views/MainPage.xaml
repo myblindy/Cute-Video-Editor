@@ -21,6 +21,9 @@
             <AppBarButton Icon="Video" AccessKey="E" Label="Export Video" ToolTipService.ToolTip="Export Video"
                           Command="{x:Bind ViewModel.ExportVideoCommand}"/>
             <AppBarSeparator/>
+            <AppBarButton Icon="Bookmarks" AccessKey="M" Label="Mark" ToolTipService.ToolTip="Add Marker"
+                          Command="{x:Bind ViewModel.AddMarkerCommand}"/>
+            <AppBarSeparator/>
             <AppBarButton Icon="Play" Label="Play" Command="{x:Bind ViewModel.PlayCommand}"/>
             <AppBarButton Icon="Pause" Label="Pause" Command="{x:Bind ViewModel.PauseCommand}"/>
         </CommandBar>
@@ -31,7 +34,7 @@
                                  Margin="{x:Bind ViewModel.VideoOverlayMargins, Mode=OneWay}"/>
 
         <controls:TimeBarHeaderControl Grid.Row="2" 
-                                       End="{x:Bind ViewModel.MediaDuration, Mode=OneWay}"
-                                       Position="{x:Bind ViewModel.MediaPosition, Mode=OneWay}"/>
+                                       End="{x:Bind ViewModel.OutputMediaDuration, Mode=OneWay}"
+                                       Position="{x:Bind ViewModel.OutputMediaPosition, Mode=OneWay}"/>
     </Grid>
 </Page>
