@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     MinHeight="40">
 
-    <Grid>
+    <Grid Background="Transparent">
         <!-- ticks -->
         <ItemsControl ItemsSource="{x:Bind Ticks}">
             <ItemsControl.ItemsPanel>

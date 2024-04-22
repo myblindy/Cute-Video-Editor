@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Helpers;
 using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
@@ -22,7 +23,7 @@ namespace CuteVideoEditor;
 [ObservableObject]
 public sealed partial class MainWindow : WindowEx
 {
-    private readonly DialogService dialogService = App.GetService<DialogService>();
+    private readonly IDialogService dialogService = App.GetService<IDialogService>();
     private readonly UISettings settings;
 
     public ObservableCollection<MainWindowTabEntry> Tabs { get; } = [];
@@ -90,6 +91,10 @@ public sealed partial class MainWindow : WindowEx
 
             keyboardHookProc = new(KeyboardHookProc);
             hookHandle = PInvoke.SetWindowsHookEx(WINDOWS_HOOK_ID.WH_KEYBOARD, keyboardHookProc, null, PInvoke.GetCurrentThreadId());
+
+            // open the first tab
+            if (Tabs.Count == 0)
+                TabView_AddTabButtonClick(TabView, null);
         }
     }
 
@@ -114,7 +119,7 @@ public sealed partial class MainWindow : WindowEx
     private void Settings_ColorValuesChanged(UISettings sender, object args) =>
         App.MainDispatcherQueue.TryEnqueue(TitleBarHelper.ApplySystemThemeToCaptionButtons);
 
-    private async void TabView_AddTabButtonClick(Microsoft.UI.Xaml.Controls.TabView sender, object args)
+    private async void TabView_AddTabButtonClick(Microsoft.UI.Xaml.Controls.TabView sender, object? args)
     {
         if (await dialogService.SelectVideoFileAsync() is { } mediaFileName)
         {

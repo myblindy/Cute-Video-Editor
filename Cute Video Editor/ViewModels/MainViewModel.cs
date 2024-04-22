@@ -15,6 +15,8 @@ using AutoMapper;
 using Windows.System;
 using FFmpegInteropX;
 using CuteVideoEditor.Contracts.Services;
+using CuteVideoEditor.Core.Helpers;
+using System.Windows.Forms;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -85,6 +87,7 @@ public partial class MainViewModel : ObservableRecipient
     {
         get
         {
+            if (MediaFrameRate is 0) return default;
 
             // calculate the frame count ignoring all the active trimming markers
             var totalFrameCount = (long)(MediaDuration.TotalSeconds * MediaFrameRate);
@@ -100,8 +103,35 @@ public partial class MainViewModel : ObservableRecipient
         }
     }
 
-    public TimeSpan OutputMediaPosition =>
-        TimeSpan.FromSeconds(CurrentOutputFrameNumber / MediaFrameRate);
+    public TimeSpan OutputMediaPosition
+    {
+        get => MediaFrameRate is 0 ? default : TimeSpan.FromSeconds(CurrentOutputFrameNumber / MediaFrameRate);
+        set
+        {
+            // convert the output position to input position
+            var outputFrameNumber = (long)(value.Clamp(TimeSpan.Zero, OutputMediaDuration).TotalSeconds * MediaFrameRate);
+            var inputFrameNumber = 0L;
+            for (var i = 0; i < TrimmingMarkers.Count; ++i)
+            {
+                var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
+                    (long)(i == TrimmingMarkers.Count - 1 ? MediaDuration.TotalSeconds * MediaFrameRate : TrimmingMarkers[i + 1].FrameNumber));
+
+                var framesNeeded = Math.Min(frameEnd - frameStart, outputFrameNumber);
+                inputFrameNumber += framesNeeded;
+                if (!TrimmingMarkers[i].TrimAfter)
+                    outputFrameNumber -= framesNeeded;
+
+                if (outputFrameNumber == 0)
+                    break;
+            }
+
+            // if we have frames left over, we don't have enough output media duration
+            if (outputFrameNumber > 0)
+                throw new InvalidOperationException();
+
+            UpdateMediaPosition?.Invoke(TimeSpan.FromSeconds(inputFrameNumber / MediaFrameRate));
+        }
+    }
 
     public CropRectModel CurrentCropRect
     {
@@ -202,6 +232,12 @@ public partial class MainViewModel : ObservableRecipient
         var insertIndex = TrimmingMarkers.FindLastIndex(x => x.FrameNumber <= frameNumber);
         if (TrimmingMarkers[insertIndex].FrameNumber == frameNumber) return;
         TrimmingMarkers.Insert(insertIndex + 1, new(frameNumber));
+    }
+
+    [RelayCommand]
+    void PositionPercentageUpdateRequest(double percentage)
+    {
+        UpdateMediaPosition?.Invoke(TimeSpan.FromSeconds(percentage * MediaDuration.TotalSeconds));
     }
 
     [RelayCommand]

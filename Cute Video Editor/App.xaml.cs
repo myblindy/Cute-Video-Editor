@@ -52,7 +52,7 @@ public partial class App : Application
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IPageService, PageService>();
                 services.AddSingleton<INavigationService, NavigationService>();
-                services.AddSingleton<DialogService>();
+                services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<FFmpegLogProvider>();
 
                 // Core Services
@@ -73,16 +73,6 @@ public partial class App : Application
         UnhandledException += App_UnhandledException;
 
         FFmpegInteropLogging.SetLogProvider(GetService<FFmpegLogProvider>());
-
-        using var transcode = new FFmpegTranscode();
-        transcode.Run(new(@"D:\temp\sn06.mkv", 0, []), new()
-        {
-            FileName = @"d:\temp\test-cve.webm",
-            Type = OutputType.Vp8,
-            FrameRate = 30,
-            Bitrate = 20 * 1024 * 1204,
-            PixelSize = new(80, 80),
-        });
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

@@ -35,6 +35,7 @@
 
         <controls:TimeBarHeaderControl Grid.Row="2" 
                                        End="{x:Bind ViewModel.OutputMediaDuration, Mode=OneWay}"
-                                       Position="{x:Bind ViewModel.OutputMediaPosition, Mode=OneWay}"/>
+                                       Position="{x:Bind ViewModel.OutputMediaPosition, Mode=OneWay}"
+                                       PositionPercentageUpdateRequestCommand="{x:Bind ViewModel.PositionPercentageUpdateRequestCommand}"/>
     </Grid>
 </Page>

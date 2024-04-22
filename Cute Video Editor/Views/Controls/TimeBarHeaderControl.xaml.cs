@@ -1,7 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace CuteVideoEditor.Views.Controls;
 
@@ -40,6 +42,8 @@ public sealed partial class TimeBarHeaderControl : UserControl
     [ObservableProperty]
     TimeBarHeaderControlTickEntry positionTick;
 
+    public ICommand? PositionPercentageUpdateRequestCommand { get; set; }
+
     [Flags]
     enum RebuildType { Ticks = 1 << 0, Position = 1 << 1, All = Ticks | Position }
     void Rebuild(RebuildType rebuildType)
@@ -74,6 +78,13 @@ public sealed partial class TimeBarHeaderControl : UserControl
         InitializeComponent();
 
         SizeChanged += (s, e) => Rebuild(RebuildType.All);
+    }
+
+    protected override void OnPointerPressed(PointerRoutedEventArgs e)
+    {
+        var ppt = e.GetCurrentPoint(this);
+        if (ppt.PointerDeviceType is Microsoft.UI.Input.PointerDeviceType.Mouse && ppt.Properties.IsLeftButtonPressed)
+            PositionPercentageUpdateRequestCommand?.Execute(ppt.Position.X / ActualWidth);
     }
 
     public static double GetXOffset(TimeSpan timeSpan, TimeBarHeaderControl? timeBarHeader) => timeBarHeader is null ? 0 :

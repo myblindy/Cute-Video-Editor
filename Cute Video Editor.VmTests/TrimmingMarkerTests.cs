@@ -149,4 +149,60 @@ public class TrimmingMarkerTests
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(20)),
         ]);
     }
+
+    [TestMethod]
+    public void SetOutputMediaPosition()
+    {
+        var vm = CreateDefaultTestViewModel();
+        vm.UpdateMediaPosition += pos => vm.InputMediaPosition = pos;
+
+        void AssertOutputMediaPositions((TimeSpan output, TimeSpan input)[] vals)
+        {
+            foreach (var (output, input) in vals)
+            {
+                vm.OutputMediaPosition = output;
+                Assert.AreEqual(input, vm.InputMediaPosition);
+            }
+        }
+
+        AssertOutputMediaPositions([
+            (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)),
+            (TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)),
+            (TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(15)),
+            (TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20)),
+            (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(25)),
+        ]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.AddMarkerCommand.Execute(null);
+        AssertOutputMediaPositions([
+            (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)),
+            (TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)),
+            (TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(15)),
+            (TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20)),
+            (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(25)),
+        ]);
+
+        vm.TrimmingMarkers[0].TrimAfter = true;
+        AssertOutputMediaPositions([
+            (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10)),
+            (TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(15)),
+            (TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(20)),
+            (TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(25)),
+            (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(30)),
+        ]);
+
+        vm.TrimmingMarkers[1].TrimAfter = true;
+        AssertOutputMediaPositions([
+            (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(0)),
+        ]);
+    }
 }
