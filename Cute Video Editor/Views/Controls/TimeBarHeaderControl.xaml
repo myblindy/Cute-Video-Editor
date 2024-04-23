@@ -5,39 +5,83 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:CuteVideoEditor.Views.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    MinHeight="40">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:vm="using:CuteVideoEditor.ViewModels"
+    mc:Ignorable="d">
 
-    <Grid Background="Transparent">
-        <!-- ticks -->
-        <ItemsControl ItemsSource="{x:Bind Ticks}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- header -->
+        <Grid Grid.Row="0" Background="Transparent" MinHeight="40">
+            <!-- ticks -->
+            <ItemsControl ItemsSource="{x:Bind Ticks}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:TimeBarHeaderControlTickEntry">
+                        <Grid>
+                            <Grid.RenderTransform>
+                                <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(TimeSpan, TimeBarHeader)}" Y="0"/>
+                            </Grid.RenderTransform>
+
+                            <TextBlock Text="{x:Bind DisplayText}" Foreground="#ccc" FontSize="10"/>
+                            <Line Y2="{x:Bind local:TimeBarHeaderControl.GetTickHeight(Multiplier)}" Stroke="#555">
+                                <Line.RenderTransform>
+                                    <TranslateTransform X="-3" Y="0"/>
+                                </Line.RenderTransform>
+                            </Line>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <!-- disjunct trims -->
+        <ItemsControl Grid.Row="1" ItemsSource="{x:Bind DisjunctOutputTrims}" Height="40">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="local:TimeBarHeaderControlTickEntry">
-                    <Grid>
-                        <Grid.RenderTransform>
-                            <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(TimeSpan, TimeBarHeader)}" Y="0"/>
-                        </Grid.RenderTransform>
+                <DataTemplate x:DataType="local:TimeBarHeaderControlDisjunctTrimmingMarkerEntry">
+                    <Rectangle Width="{x:Bind local:TimeBarHeaderControl.GetXOffset(Duration, TimeBarHeader)}"
+                                   Height="40" Fill="#444" Stroke="White">
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(From, TimeBarHeader)}" Y="0"/>
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
-                        <TextBlock Text="{x:Bind DisplayText}" Foreground="#ccc" FontSize="10"/>
-                        <Line Y2="{x:Bind local:TimeBarHeaderControl.GetTickHeight(Multiplier)}" Stroke="#555">
-                            <Line.RenderTransform>
-                                <TranslateTransform X="-3" Y="0"/>
-                            </Line.RenderTransform>
-                        </Line>
-                    </Grid>
+        <!-- non-disjunt markers -->
+        <ItemsControl Grid.Row="1" ItemsSource="{x:Bind NonDisjunctOutputMarkers}" >
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:TimeBarHeaderControlNonDisjunctMarkerEntry">
+                    <Line X1="{x:Bind local:TimeBarHeaderControl.GetXOffset(Position, TimeBarHeader)}"
+                          X2="{x:Bind local:TimeBarHeaderControl.GetXOffset(Position, TimeBarHeader)}"
+                          Y2="40"
+                          Stroke="Gray" StrokeDashArray="3 1"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
         <!-- position -->
-        <Canvas>
-            <Line Y2="40" Stroke="White" StrokeThickness="2">
+        <Canvas Grid.Row="0" Grid.RowSpan="2">
+            <Line Y2="80" Stroke="White" StrokeThickness="2">
                 <Line.RenderTransform>
                     <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(PositionTick.TimeSpan, PositionTick.TimeBarHeader), Mode=OneWay}"/>
                 </Line.RenderTransform>

@@ -1,7 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CuteVideoEditor.Core.Helpers;
+using CuteVideoEditor.Core.Models;
+using CuteVideoEditor.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -10,39 +14,53 @@ namespace CuteVideoEditor.Views.Controls;
 [ObservableObject]
 public sealed partial class TimeBarHeaderControl : UserControl
 {
-    public static readonly DependencyProperty EndProperty =
-        DependencyProperty.Register(nameof(End), typeof(TimeSpan), typeof(TimeBarHeaderControl), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
-            ((TimeBarHeaderControl)s).Rebuild(RebuildType.Ticks)));
+    public static readonly DependencyProperty EndProperty = DependencyProperty.Register(nameof(End), typeof(TimeSpan), typeof(TimeBarHeaderControl),
+        new PropertyMetadata(TimeSpan.Zero, (s, e) => ((TimeBarHeaderControl)s).Rebuild(RebuildType.Ticks)));
     public TimeSpan End
     {
         get { return (TimeSpan)GetValue(EndProperty); }
         set { SetValue(EndProperty, value); }
     }
 
-    public static readonly DependencyProperty StartProperty =
-        DependencyProperty.Register(nameof(Start), typeof(TimeSpan), typeof(TimeBarHeaderControl), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
-            ((TimeBarHeaderControl)s).Rebuild(RebuildType.Ticks)));
+    public static readonly DependencyProperty StartProperty = DependencyProperty.Register(nameof(Start), typeof(TimeSpan), typeof(TimeBarHeaderControl),
+        new PropertyMetadata(TimeSpan.Zero, (s, e) => ((TimeBarHeaderControl)s).Rebuild(RebuildType.Ticks)));
     public TimeSpan Start
     {
         get { return (TimeSpan)GetValue(StartProperty); }
         set { SetValue(StartProperty, value); }
     }
 
-    public static readonly DependencyProperty PositionProperty =
-        DependencyProperty.Register(nameof(Position), typeof(TimeSpan), typeof(TimeBarHeaderControl), new PropertyMetadata(TimeSpan.Zero, (s, e) =>
-            ((TimeBarHeaderControl)s).Rebuild(RebuildType.Position)));
+    public static readonly DependencyProperty PositionProperty = DependencyProperty.Register(nameof(Position), typeof(TimeSpan), typeof(TimeBarHeaderControl),
+        new PropertyMetadata(TimeSpan.Zero, (s, e) => ((TimeBarHeaderControl)s).Rebuild(RebuildType.Position)));
     public TimeSpan Position
     {
         get { return (TimeSpan)GetValue(PositionProperty); }
         set { SetValue(PositionProperty, value); }
     }
 
-    public ObservableCollection<TimeBarHeaderControlTickEntry> Ticks = [];
+    public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(nameof(ViewModel), typeof(MainViewModel), typeof(TimeBarHeaderControl),
+        new PropertyMetadata(null, (s, e) => ((TimeBarHeaderControl)s).OnViewModelChanged()));
+    public MainViewModel? ViewModel
+    {
+        get { return (MainViewModel?)GetValue(ViewModelProperty); }
+        set { SetValue(ViewModelProperty, value); }
+    }
+
+    public ObservableCollection<TimeBarHeaderControlTickEntry> Ticks { get; } = [];
+    public ObservableCollection<TimeBarHeaderControlDisjunctTrimmingMarkerEntry> DisjunctOutputTrims { get; } = [];
+    public ObservableCollection<TimeBarHeaderControlNonDisjunctMarkerEntry> NonDisjunctOutputMarkers { get; } = [];
 
     [ObservableProperty]
     TimeBarHeaderControlTickEntry positionTick;
 
-    public ICommand? PositionPercentageUpdateRequestCommand { get; set; }
+    void OnViewModelChanged()
+    {
+        if (ViewModel is not null)
+        {
+            DisjunctOutputTrims.KeepInSync(ViewModel.DisjunctOutputTrims, w => new(w, this));
+            NonDisjunctOutputMarkers.KeepInSync(ViewModel.NonDisjunctOutputMarkers, w => new(w, this));
+        }
+    }
 
     [Flags]
     enum RebuildType { Ticks = 1 << 0, Position = 1 << 1, All = Ticks | Position }
@@ -84,7 +102,7 @@ public sealed partial class TimeBarHeaderControl : UserControl
     {
         var ppt = e.GetCurrentPoint(this);
         if (ppt.PointerDeviceType is Microsoft.UI.Input.PointerDeviceType.Mouse && ppt.Properties.IsLeftButtonPressed)
-            PositionPercentageUpdateRequestCommand?.Execute(ppt.Position.X / ActualWidth);
+            ViewModel!.PositionPercentageUpdateRequestCommand?.Execute(ppt.Position.X / ActualWidth);
     }
 
     public static double GetXOffset(TimeSpan timeSpan, TimeBarHeaderControl? timeBarHeader) => timeBarHeader is null ? 0 :
@@ -103,4 +121,28 @@ public readonly struct TimeBarHeaderControlTickEntry
     public TimeBarHeaderControlTickEntry(TimeSpan timeSpan, float mult, TimeBarHeaderControl timeBarHeader) =>
         (TimeSpan, Multiplier, TimeBarHeader, DisplayText) =
             (timeSpan, mult, timeBarHeader, mult == 1 ? timeSpan.ToString(@"hh\:mm\:ss") : null);
+}
+
+public readonly struct TimeBarHeaderControlDisjunctTrimmingMarkerEntry
+{
+    public readonly TimeSpan From, To;
+    public TimeSpan Duration => To - From;
+    public readonly TimeBarHeaderControl TimeBarHeader;
+
+    public TimeBarHeaderControlDisjunctTrimmingMarkerEntry(TimeSpan from, TimeSpan to, TimeBarHeaderControl timeBarHeader) =>
+        (From, To, TimeBarHeader) = (from, to, timeBarHeader);
+
+    public TimeBarHeaderControlDisjunctTrimmingMarkerEntry(DisjunctTrimmingMarkerEntry entry, TimeBarHeaderControl timeBarHeader) :
+        this(entry.From, entry.To, timeBarHeader)
+    {
+    }
+}
+
+public readonly struct TimeBarHeaderControlNonDisjunctMarkerEntry
+{
+    public readonly TimeSpan Position;
+    public readonly TimeBarHeaderControl TimeBarHeader;
+
+    public TimeBarHeaderControlNonDisjunctMarkerEntry(TimeSpan position, TimeBarHeaderControl timeBarHeader) =>
+        (Position, TimeBarHeader) = (position, timeBarHeader);
 }

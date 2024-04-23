@@ -4,19 +4,15 @@ using CuteVideoEditor.Core.Models;
 using Microsoft.UI.Xaml;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Reactive.Linq;
 using Windows.Media.Playback;
 using SuperLinq;
-using CuteVideoEditor.Services;
 using System.Text.Json;
 using DynamicData;
 using AutoMapper;
 using Windows.System;
-using FFmpegInteropX;
 using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Helpers;
-using System.Windows.Forms;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -56,32 +52,11 @@ public partial class MainViewModel : ObservableRecipient
     public Thickness VideoOverlayMargins { get; private set; }
     public double VideoOverlayScale { get; private set; }
 
-    public ObservableCollection<CropFrameEntryModel> CropFrames = [];
-    public ObservableCollection<TrimmingMarkerModel> TrimmingMarkers = [new(0)];
+    public ObservableCollection<CropFrameEntryModel> CropFrames { get; } = [];
+    public ObservableCollection<TrimmingMarkerModel> TrimmingMarkers { get; } = [new(0)];
 
     long CurrentInputFrameNumber => (long)(InputMediaPosition.TotalSeconds * MediaFrameRate);
-    long CurrentOutputFrameNumber
-    {
-        get
-        {
-            // return the frame number ignoring all the active trimming markers
-            var inputFrameNumber = CurrentInputFrameNumber;
-            var frameNumber = 0L;
-            for (var i = 0; i < TrimmingMarkers.Count; ++i)
-                if (TrimmingMarkers[i].FrameNumber <= inputFrameNumber)
-                {
-                    var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
-                        i == TrimmingMarkers.Count - 1 ? MediaDuration.TotalSeconds * MediaFrameRate : TrimmingMarkers[i + 1].FrameNumber);
-                    frameNumber += !TrimmingMarkers[i].TrimAfter
-                        ? (long)Math.Min(inputFrameNumber - frameStart, frameEnd - frameStart)
-                        : 0;
-                }
-                else
-                    break;
-
-            return frameNumber;
-        }
-    }
+    long CurrentOutputFrameNumber => GetOutputFrameNumberFromInputFrameNumber(CurrentInputFrameNumber);
 
     public TimeSpan OutputMediaDuration
     {
@@ -203,6 +178,9 @@ public partial class MainViewModel : ObservableRecipient
     [NotifyCanExecuteChangedFor(nameof(PlayCommand), nameof(PauseCommand))]
     MediaPlaybackState mediaPlaybackState;
 
+    public ObservableCollection<DisjunctTrimmingMarkerEntry> DisjunctOutputTrims { get; } = [];
+    public ObservableCollection<TimeSpan> NonDisjunctOutputMarkers { get; } = [];
+
     [RelayCommand(CanExecute = nameof(CanPause))]
     void Pause() => MediaPlaybackState = MediaPlaybackState.Paused;
     bool CanPause() => MediaPlaybackState == MediaPlaybackState.Playing;
@@ -235,10 +213,8 @@ public partial class MainViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    void PositionPercentageUpdateRequest(double percentage)
-    {
+    void PositionPercentageUpdateRequest(double percentage) =>
         UpdateMediaPosition?.Invoke(TimeSpan.FromSeconds(percentage * MediaDuration.TotalSeconds));
-    }
 
     [RelayCommand]
     async Task ExportVideoAsync()
@@ -249,6 +225,7 @@ public partial class MainViewModel : ObservableRecipient
     {
         this.dialogService = dialogService;
         this.mapper = mapper;
+
         this.WhenAnyValue(x => x.MediaPixelSize, x => x.VideoPlayerPixelSize)
             .Subscribe(((SizeModel MediaPixelSize, SizeModel VideoPlayerPixelSize) w) =>
             {
@@ -276,6 +253,10 @@ public partial class MainViewModel : ObservableRecipient
                     VideoOverlayScale = VideoPlayerPixelSize.Width / (double)MediaPixelSize.Width;
                 OnPropertyChanged(nameof(VideoOverlayScale));
             });
+
+        // trimming marker updates
+        TrimmingMarkers.ActOnEveryObject((s, e) => RebuildTrimmingMarkers());
+        this.WhenAnyValue(x => x.MediaDuration, x => x.MediaFrameRate).Subscribe(_ => RebuildTrimmingMarkers());
     }
 
     public void LoadProjectFile(string projectFileName)
@@ -318,8 +299,83 @@ public partial class MainViewModel : ObservableRecipient
             case (VirtualKey.Right, false):
                 UpdateMediaPosition?.Invoke(InputMediaPosition + TimeSpan.FromSeconds(1 / MediaFrameRate));
                 return true;
+            case (VirtualKey.M, true):
+                AddMarker();
+                return true;
         }
 
         return false;
     }
+
+    public long GetOutputFrameNumberFromInputFrameNumber(long inputFrameNumber)
+    {
+        var frameNumber = 0L;
+        for (var i = 0; i < TrimmingMarkers.Count; ++i)
+            if (TrimmingMarkers[i].FrameNumber <= inputFrameNumber)
+            {
+                var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
+                    i == TrimmingMarkers.Count - 1 ? MediaDuration.TotalSeconds * MediaFrameRate : TrimmingMarkers[i + 1].FrameNumber);
+                frameNumber += !TrimmingMarkers[i].TrimAfter
+                    ? (long)Math.Min(inputFrameNumber - frameStart, frameEnd - frameStart)
+                    : 0;
+            }
+            else
+                break;
+
+        return frameNumber;
+    }
+
+    public TimeSpan GetPositionFromFrameNumber(long outputFrameNumber) =>
+        MediaFrameRate is 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(outputFrameNumber / MediaFrameRate);
+
+    void RebuildTrimmingMarkers()
+    {
+        TimeSpan lastStart = TimeSpan.MinValue, lastEnd = TimeSpan.MinValue,
+            lastMarkerPosition = TimeSpan.MinValue;
+
+        DisjunctOutputTrims.Clear();
+        NonDisjunctOutputMarkers.Clear();
+
+        foreach (var marker in TrimmingMarkers)
+        {
+            var markerPosition = GetPositionFromFrameNumber(GetOutputFrameNumberFromInputFrameNumber(marker.FrameNumber));
+            if (!marker.TrimAfter)
+            {
+                if (lastStart == TimeSpan.MinValue)
+                    lastStart = markerPosition;
+                else if (lastEnd == lastMarkerPosition || lastEnd == TimeSpan.MinValue)
+                {
+                    NonDisjunctOutputMarkers.Add(markerPosition);
+                    lastEnd = markerPosition;
+                }
+                else
+                {
+                    DisjunctOutputTrims.Add(new(lastStart, lastEnd));
+                    lastStart = markerPosition;
+                    lastEnd = TimeSpan.MinValue;
+                }
+            }
+            else if (lastStart != TimeSpan.MinValue)
+            {
+                DisjunctOutputTrims.Add(new(lastStart, markerPosition));
+                lastStart = TimeSpan.MinValue;
+            }
+
+            lastMarkerPosition = markerPosition;
+        }
+
+        // last trim
+        if (lastStart != TimeSpan.MinValue && !TrimmingMarkers[^1].TrimAfter)
+            DisjunctOutputTrims.Add(new(lastStart, OutputMediaDuration));
+        else if (lastStart == TimeSpan.MinValue && lastEnd == TimeSpan.MinValue && DisjunctOutputTrims.Count == 0)
+            DisjunctOutputTrims.Add(new(TimeSpan.Zero, TimeSpan.Zero));
+    }
+}
+
+public readonly struct DisjunctTrimmingMarkerEntry
+{
+    public readonly TimeSpan From, To;
+
+    public DisjunctTrimmingMarkerEntry(TimeSpan from, TimeSpan to) =>
+        (From, To) = (from, to);
 }

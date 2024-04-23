@@ -21,8 +21,10 @@
             <AppBarButton Icon="Video" AccessKey="E" Label="Export Video" ToolTipService.ToolTip="Export Video"
                           Command="{x:Bind ViewModel.ExportVideoCommand}"/>
             <AppBarSeparator/>
-            <AppBarButton Icon="Bookmarks" AccessKey="M" Label="Mark" ToolTipService.ToolTip="Add Marker"
+            <AppBarButton Icon="MapPin" AccessKey="M" Label="Mark" ToolTipService.ToolTip="Add Marker"
                           Command="{x:Bind ViewModel.AddMarkerCommand}"/>
+            <AppBarButton Icon="Trim" AccessKey="T" Label="Trim" ToolTipService.ToolTip="Trim the media between markers"
+                          Command="{x:Bind ViewModel.AddTrimCommand}"/>
             <AppBarSeparator/>
             <AppBarButton Icon="Play" Label="Play" Command="{x:Bind ViewModel.PlayCommand}"/>
             <AppBarButton Icon="Pause" Label="Pause" Command="{x:Bind ViewModel.PauseCommand}"/>
@@ -36,6 +38,6 @@
         <controls:TimeBarHeaderControl Grid.Row="2" 
                                        End="{x:Bind ViewModel.OutputMediaDuration, Mode=OneWay}"
                                        Position="{x:Bind ViewModel.OutputMediaPosition, Mode=OneWay}"
-                                       PositionPercentageUpdateRequestCommand="{x:Bind ViewModel.PositionPercentageUpdateRequestCommand}"/>
+                                       ViewModel="{x:Bind ViewModel}"/>
     </Grid>
 </Page>

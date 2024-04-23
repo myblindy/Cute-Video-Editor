@@ -205,4 +205,71 @@ public class TrimmingMarkerTests
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(0)),
         ]);
     }
+
+    [TestMethod]
+    public void TrimmingMarkers()
+    {
+        var vm = CreateDefaultTestViewModel();
+
+        void AssertOutputTrimmingMarkers(TimeSpan outputMediaDuration, DisjunctTrimmingMarkerEntry[] disjunctOutputTrims, TimeSpan[] nonDisjunctOutputMarkers)
+        {
+            Assert.AreEqual(outputMediaDuration, vm.OutputMediaDuration, "media duration");
+            CollectionAssert.AreEqual(disjunctOutputTrims, vm.DisjunctOutputTrims, "disjunct output trims");
+            CollectionAssert.AreEqual(nonDisjunctOutputMarkers, vm.NonDisjunctOutputMarkers, "non-disjunct output markers");
+        }
+
+        AssertOutputTrimmingMarkers(vm.MediaDuration, [
+                new(TimeSpan.Zero, vm.OutputMediaDuration)
+            ], [
+            ]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        vm.AddMarkerCommand.Execute(null);
+        AssertOutputTrimmingMarkers(vm.MediaDuration, [
+                new(TimeSpan.Zero, vm.OutputMediaDuration)
+            ], [
+                TimeSpan.FromSeconds(10)
+            ]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
+        vm.AddMarkerCommand.Execute(null);
+        AssertOutputTrimmingMarkers(vm.MediaDuration, [
+                new(TimeSpan.Zero, vm.OutputMediaDuration)
+            ], [
+                TimeSpan.FromSeconds(10),
+                TimeSpan.FromSeconds(20)
+            ]);
+
+        vm.TrimmingMarkers[1].TrimAfter = true;
+        AssertOutputTrimmingMarkers(vm.MediaDuration - TimeSpan.FromSeconds(10), [
+                new(TimeSpan.Zero, TimeSpan.FromSeconds(10)),
+                new(TimeSpan.FromSeconds(10), vm.OutputMediaDuration)
+            ], [
+            ]);
+
+        vm.TrimmingMarkers[0].TrimAfter = true;
+        AssertOutputTrimmingMarkers(vm.MediaDuration - TimeSpan.FromSeconds(20), [
+                new(TimeSpan.Zero, vm.OutputMediaDuration)
+            ], [
+            ]);
+
+        vm.TrimmingMarkers[2].TrimAfter = true;
+        AssertOutputTrimmingMarkers(TimeSpan.Zero, [
+                new(TimeSpan.Zero, vm.OutputMediaDuration)
+            ], [
+            ]);
+
+        vm.TrimmingMarkers[0].TrimAfter = false;
+        AssertOutputTrimmingMarkers(TimeSpan.FromSeconds(10), [
+                new(TimeSpan.Zero, vm.OutputMediaDuration)
+            ], [
+            ]);
+
+        vm.TrimmingMarkers[1].TrimAfter = false;
+        AssertOutputTrimmingMarkers(TimeSpan.FromSeconds(20), [
+                new(TimeSpan.Zero, vm.OutputMediaDuration)
+            ], [
+                TimeSpan.FromSeconds(10)
+            ]);
+    }
 }
