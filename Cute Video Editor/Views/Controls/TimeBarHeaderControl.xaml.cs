@@ -89,6 +89,10 @@ public sealed partial class TimeBarHeaderControl : UserControl
         {
             PositionTick = new(Position, 0f, this);
         }
+
+        DisjunctOutputTrims.ResetSync();
+        NonDisjunctOutputMarkers.ResetSync();
+        OnPropertyChanged(nameof(PositionTick));
     }
 
     public TimeBarHeaderControl()

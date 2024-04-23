@@ -210,11 +210,26 @@ public partial class MainViewModel : ObservableRecipient
         var insertIndex = TrimmingMarkers.FindLastIndex(x => x.FrameNumber <= frameNumber);
         if (TrimmingMarkers[insertIndex].FrameNumber == frameNumber) return;
         TrimmingMarkers.Insert(insertIndex + 1, new(frameNumber));
+        OnPropertyChanged(nameof(OutputMediaDuration));
+        OnPropertyChanged(nameof(OutputMediaPosition));
     }
 
     [RelayCommand]
     void PositionPercentageUpdateRequest(double percentage) =>
-        UpdateMediaPosition?.Invoke(TimeSpan.FromSeconds(percentage * MediaDuration.TotalSeconds));
+        UpdateMediaPosition?.Invoke(GetPositionFromFrameNumber(
+            GetInputFrameNumberFromOutputFrameNumber(GetFrameNumberFromPosition(TimeSpan.FromSeconds(percentage * OutputMediaDuration.TotalSeconds)))));
+
+    [RelayCommand]
+    void AddTrim()
+    {
+        var outputFrameNumber = CurrentOutputFrameNumber;
+        if (TrimmingMarkers.LastOrDefault(w => w.FrameNumber < outputFrameNumber) is { } marker)
+        {
+            marker.TrimAfter = true;
+            OnPropertyChanged(nameof(OutputMediaDuration));
+            OnPropertyChanged(nameof(OutputMediaPosition));
+        }
+    }
 
     [RelayCommand]
     async Task ExportVideoAsync()
@@ -327,6 +342,33 @@ public partial class MainViewModel : ObservableRecipient
 
     public TimeSpan GetPositionFromFrameNumber(long outputFrameNumber) =>
         MediaFrameRate is 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(outputFrameNumber / MediaFrameRate);
+
+    public long GetFrameNumberFromPosition(TimeSpan position) =>
+        (long)(position.TotalSeconds * MediaFrameRate);
+
+    public long GetInputFrameNumberFromOutputFrameNumber(long outputFrameNumber)
+    {
+        var frameNumber = 0L;
+        for (var i = 0; i < TrimmingMarkers.Count; ++i)
+        {
+            var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
+                (long)(i == TrimmingMarkers.Count - 1 ? MediaDuration.TotalSeconds * MediaFrameRate : TrimmingMarkers[i + 1].FrameNumber));
+
+            if (TrimmingMarkers[i].TrimAfter)
+                frameNumber += frameEnd - frameStart;
+            else
+            {
+                var framesNeeded = Math.Min(frameEnd - frameStart, outputFrameNumber);
+                frameNumber += framesNeeded;
+                outputFrameNumber -= framesNeeded;
+
+                if (outputFrameNumber == 0)
+                    break;
+            }
+        }
+
+        return frameNumber;
+    }
 
     void RebuildTrimmingMarkers()
     {

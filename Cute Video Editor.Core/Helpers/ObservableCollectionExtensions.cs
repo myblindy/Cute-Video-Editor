@@ -1,13 +1,8 @@
 ﻿using DynamicData;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CuteVideoEditor.Core.Helpers;
 
@@ -21,11 +16,16 @@ public static class ObservableCollectionExtensions
             x => x.PropertyChanged -= action);
     }
 
+    static readonly Dictionary<object, Action> synchronizedObservableCollections = [];
     public static void KeepInSync<TSrc, TDst>(this ObservableCollection<TDst> target, ObservableCollection<TSrc> source,
-        Func<TSrc, TDst> projection) 
+        Func<TSrc, TDst> projection)
     {
-        target.Clear();
-        target.AddRange(source.Select(projection));
+        synchronizedObservableCollections[target] = () =>
+        {
+            target.Clear();
+            target.AddRange(source.Select(projection));
+        };
+        target.ResetSync();
 
         source.CollectionChanged += (s, e) =>
         {
@@ -56,4 +56,7 @@ public static class ObservableCollectionExtensions
             }
         };
     }
+
+    public static void ResetSync<TDst>(this ObservableCollection<TDst> target) =>
+        synchronizedObservableCollections[target]();
 }
