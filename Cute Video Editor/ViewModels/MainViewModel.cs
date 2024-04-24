@@ -189,6 +189,77 @@ public partial class MainViewModel : ObservableRecipient
     void Play() => MediaPlaybackState = MediaPlaybackState.Playing;
     bool CanPlay() => MediaPlaybackState is not MediaPlaybackState.Playing;
 
+    partial void OnInputMediaPositionChanged(TimeSpan value)
+    {
+        // handle trim skips while playing
+        if (MediaPlaybackState == MediaPlaybackState.Playing)
+        {
+            // is the new position within a trim?
+            var newFrameNumber = GetFrameNumberFromPosition(value);
+            for (int i = 0; i < TrimmingMarkers.Count; ++i)
+            {
+                var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
+                    i == TrimmingMarkers.Count - 1 ? MediaDuration.TotalSeconds * MediaFrameRate : TrimmingMarkers[i + 1].FrameNumber);
+                if (frameStart <= newFrameNumber && newFrameNumber < frameEnd)
+                {
+                    if (TrimmingMarkers[i].TrimAfter)
+                    {
+                        // skip to the next non-trimming marker, if any, otherwise stop
+                        if (GetNextNonTrimmedInputFrameNumber(newFrameNumber, true, out var nextNonTrimmedInputFrameNumber))
+                            UpdateMediaPosition?.Invoke(GetPositionFromFrameNumber(nextNonTrimmedInputFrameNumber));
+                        else
+                            Pause();
+                    }
+                    else
+                        break;
+                }
+                else if (frameStart > newFrameNumber)
+                    return;
+            }
+        }
+    }
+
+    bool GetNextNonTrimmedInputFrameNumber(long inputFrameNumber, bool forward, out long nextNonTrimmedInputFrameNumber)
+    {
+        nextNonTrimmedInputFrameNumber = 0;
+
+        for (int i = 0; i < TrimmingMarkers.Count; ++i)
+        {
+            var (frameStart, frameEnd) = (TrimmingMarkers[i].FrameNumber,
+                i == TrimmingMarkers.Count - 1 ? MediaDuration.TotalSeconds * MediaFrameRate : TrimmingMarkers[i + 1].FrameNumber);
+            if (frameStart <= inputFrameNumber && inputFrameNumber < frameEnd)
+            {
+                if (!TrimmingMarkers[i].TrimAfter)
+                {
+                    nextNonTrimmedInputFrameNumber = inputFrameNumber;
+                    return true;
+                }
+
+                if (forward)
+                {
+                    for (; i < TrimmingMarkers.Count; ++i)
+                        if (!TrimmingMarkers[i].TrimAfter)
+                        {
+                            nextNonTrimmedInputFrameNumber = TrimmingMarkers[i].FrameNumber;
+                            return true;
+                        }
+                }
+                else
+                    for (; i >= 0; --i)
+                        if (!TrimmingMarkers[i].TrimAfter)
+                        {
+                            nextNonTrimmedInputFrameNumber = TrimmingMarkers[i + 1].FrameNumber;
+                            return true;
+                        }
+
+                return false;
+            }
+        }
+
+        // what?
+        return false;
+    }
+
     [RelayCommand]
     async Task SaveProjectAsync()
     {
@@ -301,6 +372,14 @@ public partial class MainViewModel : ObservableRecipient
             MediaPlaybackState = MediaPlaybackState.Playing;
     }
 
+    void FrameStep(bool forward)
+    {
+        var inputFrameNumber = CurrentInputFrameNumber;
+        var newInputFrameNumber = inputFrameNumber + (forward ? 2 : -1);
+        if (GetNextNonTrimmedInputFrameNumber(newInputFrameNumber, forward, out var nextNonTrimmedInputFrameNumber))
+            UpdateMediaPosition?.Invoke(GetPositionFromFrameNumber(nextNonTrimmedInputFrameNumber));
+    }
+
     internal bool ProcessKey(VirtualKey key, bool up)
     {
         switch ((key, up))
@@ -309,10 +388,10 @@ public partial class MainViewModel : ObservableRecipient
                 TogglePlayPause();
                 return true;
             case (VirtualKey.Left, false):
-                UpdateMediaPosition?.Invoke(InputMediaPosition - TimeSpan.FromSeconds(1 / MediaFrameRate));
+                FrameStep(false);
                 return true;
             case (VirtualKey.Right, false):
-                UpdateMediaPosition?.Invoke(InputMediaPosition + TimeSpan.FromSeconds(1 / MediaFrameRate));
+                FrameStep(true);
                 return true;
             case (VirtualKey.M, true):
                 AddMarker();
