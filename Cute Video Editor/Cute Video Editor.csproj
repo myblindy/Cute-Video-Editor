@@ -16,10 +16,13 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Views\Dialogs\ExportVideoContentDialog.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
-    <InternalsVisibleTo Include="$(AssemblyName).VmTests"/>
+    <InternalsVisibleTo Include="$(AssemblyName).VmTests" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
@@ -48,7 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Dialogs\" />
+    <Page Update="Views\Dialogs\ExportVideoContentDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">

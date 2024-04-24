@@ -110,7 +110,7 @@ public sealed partial class TimeBarHeaderControl : UserControl
     }
 
     public static double GetXOffset(TimeSpan timeSpan, TimeBarHeaderControl? timeBarHeader) => timeBarHeader is null ? 0 :
-        (timeSpan - timeBarHeader.Start).TotalSeconds / (timeBarHeader.End - timeBarHeader.Start).TotalSeconds * timeBarHeader.ActualWidth + 4;
+        (timeSpan - timeBarHeader.Start).TotalSeconds / (timeBarHeader.End - timeBarHeader.Start).TotalSeconds * timeBarHeader.ActualWidth /*+ 4*/;
 
     public static double GetTickHeight(float multiplier) => 40 * multiplier;
 }

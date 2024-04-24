@@ -10,12 +10,25 @@
 
     <Grid RowSpacing="5">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-        <CommandBar Grid.Row="0" OverflowButtonVisibility="Collapsed">
+        <MediaPlayerElement Grid.Row="0" x:Name="mediaPlayerElement" AreTransportControlsEnabled="False" AutoPlay="False"/>
+        <controls:CropBoxControl Grid.Row="0" 
+                                 ViewModel="{x:Bind ViewModel}"
+                                 Margin="{x:Bind ViewModel.VideoOverlayMargins, Mode=OneWay}"/>
+
+        <CommandBar Grid.Row="1" OverflowButtonVisibility="Collapsed" HorizontalContentAlignment="Center" VerticalAlignment="Center"
+                    IsDynamicOverflowEnabled="False">
+            <CommandBar.Content>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{x:Bind ViewModel.OutputMediaPosition.ToString('hh\\\\:mm\\\\:ss\\\\.ff'), Mode=OneWay}"/>
+                    <TextBlock Text="/" Margin="5,0"/>
+                    <TextBlock Text="{x:Bind ViewModel.OutputMediaDuration.ToString('hh\\\\:mm\\\\:ss\\\\.ff'), Mode=OneWay}"/>
+                </StackPanel>
+            </CommandBar.Content>
             <AppBarButton Icon="Save" AccessKey="S" Label="Save Project" ToolTipService.ToolTip="Save Project" 
                           Command="{x:Bind ViewModel.SaveProjectCommand}"/>
             <AppBarButton Icon="Video" AccessKey="E" Label="Export Video" ToolTipService.ToolTip="Export Video"
@@ -29,11 +42,6 @@
             <AppBarButton Icon="Play" Label="Play" Command="{x:Bind ViewModel.PlayCommand}"/>
             <AppBarButton Icon="Pause" Label="Pause" Command="{x:Bind ViewModel.PauseCommand}"/>
         </CommandBar>
-
-        <MediaPlayerElement Grid.Row="1" x:Name="mediaPlayerElement" AreTransportControlsEnabled="False" AutoPlay="False"/>
-        <controls:CropBoxControl Grid.Row="1" 
-                                 ViewModel="{x:Bind ViewModel}"
-                                 Margin="{x:Bind ViewModel.VideoOverlayMargins, Mode=OneWay}"/>
 
         <controls:TimeBarHeaderControl Grid.Row="2" 
                                        End="{x:Bind ViewModel.OutputMediaDuration, Mode=OneWay}"
