@@ -13,6 +13,8 @@ using AutoMapper;
 using Windows.System;
 using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Helpers;
+using Windows.Foundation;
+using FFmpegInteropX;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -205,6 +207,9 @@ public partial class MainViewModel : ObservableRecipient
     public ObservableCollection<DisjunctTrimmingMarkerEntry> DisjunctOutputTrims { get; } = [];
     public ObservableCollection<TimeSpan> NonDisjunctOutputMarkers { get; } = [];
 
+    public SizeModel LargestOutputPixelSize =>
+        new(CropFrames.Max(w => w.Rect.Width), CropFrames.Max(w => w.Rect.Height));
+
     [RelayCommand(CanExecute = nameof(CanPause))]
     void Pause() => MediaPlaybackState = MediaPlaybackState.Paused;
     bool CanPause() => MediaPlaybackState == MediaPlaybackState.Playing;
@@ -287,7 +292,7 @@ public partial class MainViewModel : ObservableRecipient
     [RelayCommand]
     async Task SaveProjectAsync()
     {
-        if ((ProjectFileName ??= await dialogService.SelectSaveProjectFileAsync()) is not null)
+        if ((ProjectFileName ??= await dialogService.SelectSaveProjectFileAsync(ProjectFileName)) is not null)
         {
             using var outputFile = File.Create(ProjectFileName!);
             await JsonSerializer.SerializeAsync(outputFile, new SerializationModel
@@ -331,6 +336,18 @@ public partial class MainViewModel : ObservableRecipient
     [RelayCommand]
     async Task ExportVideoAsync()
     {
+        if (await dialogService.SelectTranscodeOutputParameters(this) is { } outputParameters)
+        {
+            using var transcoder = new FFmpegTranscode();
+            transcoder.Run(new()
+            {
+                FileName = MediaFileName!,
+                CropFrames = CropFrames.Select(w => new FFmpegTranscodeInputCropFrameEntry(
+                    w.FrameNumber, new(w.Rect.CenterX, w.Rect.CenterY, w.Rect.Width, w.Rect.Height))).ToList(),
+                TrimmingMarkers = TrimmingMarkers.Select(w => new FFmpegTranscodeInputTrimmingMarkerEntry(
+                    w.FrameNumber, w.TrimAfter)).ToList()
+            }, outputParameters);
+        }
     }
 
     public MainViewModel(IDialogService dialogService, IMapper mapper)

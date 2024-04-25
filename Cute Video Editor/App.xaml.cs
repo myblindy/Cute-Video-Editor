@@ -3,7 +3,9 @@ using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Models;
 using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
+using CuteVideoEditor.ViewModels.Dialogs;
 using CuteVideoEditor.Views;
+using CuteVideoEditor.Views.Dialogs;
 using FFmpegInteropX;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -60,6 +62,8 @@ public partial class App : Application
                 // Views and ViewModels
                 services.AddScoped<MainViewModel>();
                 services.AddScoped<MainPage>();
+                services.AddScoped<ExportVideoViewModel>();
+                services.AddScoped<ExportVideoContentDialog>();
 
                 // Mapper
                 services.AddAutoMapper(typeof(SerializationMapperProfile));

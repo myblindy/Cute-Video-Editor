@@ -13,7 +13,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FFmpegInteropX", "FFmpegInt
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Cute Video Editor.SharedAVLib", "Cute Video Editor.SharedAVLib\Cute Video Editor.SharedAVLib.shproj", "{0041E6C0-CDD5-41E1-8C43-DC824216692F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cute Video Editor.VmTests", "Cute Video Editor.VmTests\Cute Video Editor.VmTests.csproj", "{68C8CA17-859C-45B0-8B17-27F1161BA16C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cute Video Editor.VmTests", "Cute Video Editor.VmTests\Cute Video Editor.VmTests.csproj", "{68C8CA17-859C-45B0-8B17-27F1161BA16C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,8 +133,8 @@ Global
 		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|ARM.Build.0 = Debug|Any CPU
 		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|arm64.ActiveCfg = Debug|Any CPU
 		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|arm64.Build.0 = Debug|Any CPU
-		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|x64.ActiveCfg = Debug|Any CPU
-		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|x64.Build.0 = Debug|Any CPU
+		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|x64.ActiveCfg = Debug|x64
+		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|x64.Build.0 = Debug|x64
 		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|x86.ActiveCfg = Debug|Any CPU
 		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug_WinUI|x86.Build.0 = Debug|Any CPU
 		{B30655F0-CC77-44AB-909F-C4F06DC28214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
