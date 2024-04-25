@@ -9,11 +9,29 @@ public readonly struct RectModel : IEquatable<RectModel>
     public RectModel(int centerX, int centerY, int width, int height) =>
         (CenterX, CenterY, Width, Height) = (centerX, centerY, width, height);
 
-    public RectModel Clamp(in RectModel bounds) =>
-        new(Math.Clamp(CenterX, bounds.CenterX - bounds.Width / 2 + Width / 2, bounds.CenterX + bounds.Width / 2 - Width / 2),
+    public RectModel Clamp(in RectModel bounds, bool preserveAspectRatio)
+    {
+        if (Width > bounds.Width)
+            if (preserveAspectRatio)
+            {
+                double aspectRatio = (double)Width / Height;
+                return (new RectModel(bounds.CenterX, CenterY, bounds.Width, (int)(bounds.Width / aspectRatio))).Clamp(bounds, preserveAspectRatio);
+            }
+            else
+                return (new RectModel(bounds.CenterX, CenterY, bounds.Width, Height)).Clamp(bounds, preserveAspectRatio);
+        if (Height > bounds.Height)
+            if (preserveAspectRatio)
+            {
+                double aspectRatio = (double)Width / Height;
+                return (new RectModel(CenterX, bounds.CenterY, (int)(bounds.Height * aspectRatio), bounds.Height)).Clamp(bounds, preserveAspectRatio);
+            }
+            else
+                return (new RectModel(CenterX, bounds.CenterY, Width, bounds.Height)).Clamp(bounds, preserveAspectRatio);
+        return new(Math.Clamp(CenterX, bounds.CenterX - bounds.Width / 2 + Width / 2, bounds.CenterX + bounds.Width / 2 - Width / 2),
             Math.Clamp(CenterY, bounds.CenterY - bounds.Height / 2 + Height / 2, bounds.CenterY + bounds.Height / 2 - Height / 2),
             Math.Clamp(Width, 0, bounds.Width),
             Math.Clamp(Height, 0, bounds.Height));
+    }
 
     public static RectModel operator /(in RectModel r, double v) => new(
         (int)(r.CenterX / v), (int)(r.CenterY / v), (int)(r.Width / v), (int)(r.Height / v));

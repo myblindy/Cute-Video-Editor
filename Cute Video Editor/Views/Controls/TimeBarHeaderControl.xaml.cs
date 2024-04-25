@@ -49,6 +49,7 @@ public sealed partial class TimeBarHeaderControl : UserControl
     public ObservableCollection<TimeBarHeaderControlTickEntry> Ticks { get; } = [];
     public ObservableCollection<TimeBarHeaderControlDisjunctTrimmingMarkerEntry> DisjunctOutputTrims { get; } = [];
     public ObservableCollection<TimeBarHeaderControlNonDisjunctMarkerEntry> NonDisjunctOutputMarkers { get; } = [];
+    public ObservableCollection<TimeBarHeaderControlCropFrameEntry> CropFrames { get; } = [];
 
     [ObservableProperty]
     TimeBarHeaderControlTickEntry positionTick;
@@ -59,6 +60,7 @@ public sealed partial class TimeBarHeaderControl : UserControl
         {
             DisjunctOutputTrims.KeepInSync(ViewModel.DisjunctOutputTrims, w => new(w, this));
             NonDisjunctOutputMarkers.KeepInSync(ViewModel.NonDisjunctOutputMarkers, w => new(w, this));
+            CropFrames.KeepInSync(ViewModel.CropFrames, w => new(ViewModel, w, this));
         }
     }
 
@@ -92,6 +94,7 @@ public sealed partial class TimeBarHeaderControl : UserControl
 
         DisjunctOutputTrims.ResetSync();
         NonDisjunctOutputMarkers.ResetSync();
+        CropFrames.ResetSync();
         OnPropertyChanged(nameof(PositionTick));
     }
 
@@ -149,4 +152,14 @@ public readonly struct TimeBarHeaderControlNonDisjunctMarkerEntry
 
     public TimeBarHeaderControlNonDisjunctMarkerEntry(TimeSpan position, TimeBarHeaderControl timeBarHeader) =>
         (Position, TimeBarHeader) = (position, timeBarHeader);
+}
+
+public readonly struct TimeBarHeaderControlCropFrameEntry
+{
+    public readonly TimeSpan Position;
+    public readonly TimeBarHeaderControl TimeBarHeader;
+
+    public TimeBarHeaderControlCropFrameEntry(MainViewModel vm, CropFrameEntryModel cropFrame, TimeBarHeaderControl timeBarHeader) =>
+        (Position, TimeBarHeader) =
+            (vm.GetPositionFromFrameNumber(vm.GetOutputFrameNumberFromInputFrameNumber(cropFrame.FrameNumber)), timeBarHeader);
 }

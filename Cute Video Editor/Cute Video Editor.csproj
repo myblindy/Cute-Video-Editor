@@ -50,12 +50,6 @@
     <ProjectReference Include="..\FFmpegInteropX\Source\FFmpegInteropX.DotNet.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Page Update="Views\Dialogs\ExportVideoContentDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>

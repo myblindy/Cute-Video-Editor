@@ -22,6 +22,9 @@ public partial class MainViewModel : ObservableRecipient
     private readonly IMapper mapper;
 
     [ObservableProperty]
+    string? projectFileName;
+
+    [ObservableProperty]
     string? mediaFileName;
 
     [ObservableProperty]
@@ -47,6 +50,10 @@ public partial class MainViewModel : ObservableRecipient
     [NotifyPropertyChangedFor(nameof(VideoOverlayMargins))]
     SizeModel videoPlayerPixelSize;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentCropRect))]
+    bool freezeCropSizeMode;
+
     public event Action<TimeSpan>? UpdateMediaPosition;
 
     public Thickness VideoOverlayMargins { get; private set; }
@@ -54,6 +61,14 @@ public partial class MainViewModel : ObservableRecipient
 
     public ObservableCollection<CropFrameEntryModel> CropFrames { get; } = [];
     public ObservableCollection<TrimmingMarkerModel> TrimmingMarkers { get; } = [new(0)];
+
+    partial void OnFreezeCropSizeModeChanged(bool value)
+    {
+        // if entering freeze crop size mode, delete all crop frames except the first one
+        if (value)
+            while (CropFrames.Count > 1)
+                CropFrames.RemoveAt(1);
+    }
 
     long CurrentInputFrameNumber => (long)(InputMediaPosition.TotalSeconds * MediaFrameRate);
     long CurrentOutputFrameNumber => GetOutputFrameNumberFromInputFrameNumber(CurrentInputFrameNumber);
@@ -114,6 +129,8 @@ public partial class MainViewModel : ObservableRecipient
         {
             if (CropFrames.Count == 0 || MediaFrameRate == 0 || MediaDuration == default)
                 return new(default, CropRectType.None);
+            else if (!FreezeCropSizeMode)
+                return new(CropFrames[0].Rect, CropRectType.FirstFrameUnfrozen);
             else
             {
                 var frameNumber = CurrentOutputFrameNumber;
@@ -141,6 +158,13 @@ public partial class MainViewModel : ObservableRecipient
         {
             if (MediaFrameRate == 0 || MediaDuration == default)
                 return;
+
+            if (!FreezeCropSizeMode)
+            {
+                CropFrames[0] = new(0, value.Rect);
+                OnPropertyChanged(nameof(CurrentCropRect));
+                return;
+            }
 
             var frameNumber = CurrentOutputFrameNumber;
             var existingCropFrameIndex = CropFrames.FindIndex(x => x.FrameNumber == frameNumber);
@@ -263,13 +287,15 @@ public partial class MainViewModel : ObservableRecipient
     [RelayCommand]
     async Task SaveProjectAsync()
     {
-        if (await dialogService.SelectSaveProjectFileAsync() is { } projectFileName)
+        if ((ProjectFileName ??= await dialogService.SelectSaveProjectFileAsync()) is not null)
         {
-            using var outputFile = File.Create(projectFileName);
+            using var outputFile = File.Create(ProjectFileName!);
             await JsonSerializer.SerializeAsync(outputFile, new SerializationModel
             {
                 MediaFileName = MediaFileName!,
-                CropFrames = mapper.Map<List<CropFrameEntrySerializationModel>>(CropFrames)
+                FreezeCropSizeMode = FreezeCropSizeMode,
+                CropFrames = mapper.Map<List<CropFrameEntrySerializationModel>>(CropFrames),
+                TrimmingMarkers = mapper.Map<List<TrimmingMarkerSerializationModel>>(TrimmingMarkers)
             });
         }
     }
@@ -293,8 +319,8 @@ public partial class MainViewModel : ObservableRecipient
     [RelayCommand]
     void AddTrim()
     {
-        var outputFrameNumber = CurrentOutputFrameNumber;
-        if (TrimmingMarkers.LastOrDefault(w => w.FrameNumber < outputFrameNumber) is { } marker)
+        var inputFrameNumber = CurrentInputFrameNumber;
+        if (TrimmingMarkers.LastOrDefault(w => w.FrameNumber < inputFrameNumber) is { } marker)
         {
             marker.TrimAfter = true;
             OnPropertyChanged(nameof(OutputMediaDuration));
@@ -348,19 +374,26 @@ public partial class MainViewModel : ObservableRecipient
     public void LoadProjectFile(string projectFileName)
     {
         CropFrames.Clear();
+        TrimmingMarkers.Clear();
+
         using (var inputFile = File.OpenRead(projectFileName))
             try
             {
                 if (JsonSerializer.Deserialize<SerializationModel>(inputFile) is { } model)
                 {
-                    MediaFileName = model.MediaFileName;
+                    FreezeCropSizeMode = model.FreezeCropSizeMode;
+                    ProjectFileName = projectFileName;
+                    MediaFileName = Path.GetDirectoryName(projectFileName) is { } projectDirectoryName ? Path.Combine(projectDirectoryName, model.MediaFileName) : model.MediaFileName;
                     CropFrames.AddRange(mapper.Map<List<CropFrameEntryModel>>(model.CropFrames));
+                    TrimmingMarkers.AddRange(mapper.Map<List<TrimmingMarkerModel>>(model.TrimmingMarkers));
                     return;
                 }
             }
             catch (JsonException) { }
 
         // if we couldn't parse it as a project file, load it as a video file
+        TrimmingMarkers.Add(new(0));
+        ProjectFileName = null;
         MediaFileName = projectFileName;
     }
 

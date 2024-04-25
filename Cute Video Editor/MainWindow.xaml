@@ -41,7 +41,8 @@
                      AddTabButtonClick="TabView_AddTabButtonClick" TabCloseRequested="TabView_TabCloseRequested">
                 <TabView.TabItemTemplate>
                     <DataTemplate x:DataType="local:MainWindowTabEntry">
-                        <TabViewItem Header="{x:Bind local:MainWindow.GetTabName(Page.ViewModel.MediaFileName)}"/>
+                        <TabViewItem Header="{x:Bind local:MainWindow.GetTabName(Page.ViewModel.ProjectFileName, Page.ViewModel.MediaFileName), Mode=OneWay}"
+                                     ToolTipService.ToolTip="{x:Bind local:MainWindow.GetTabToolTipName(Page.ViewModel.ProjectFileName, Page.ViewModel.MediaFileName), Mode=OneWay}"/>
                     </DataTemplate>
                 </TabView.TabItemTemplate>
             </TabView>

@@ -42,7 +42,7 @@ public sealed partial class MainPage : Page
             }
         });
         ViewModel.UpdateMediaPosition += position =>
-            mediaPlayer.PlaybackSession.Position = position.Clamp(TimeSpan.Zero, ViewModel.MediaDuration);
+            mediaPlayer.Position = position.Clamp(TimeSpan.Zero, ViewModel.MediaDuration);
 
         // load media on demand
         ViewModel.WhenAnyValue(x => x.MediaFileName).Subscribe(async mediaFileName =>
@@ -66,7 +66,7 @@ public sealed partial class MainPage : Page
                 async Task FrameTimerHandler(PeriodicTimer timer)
                 {
                     while (await timer.WaitForNextTickAsync().ConfigureAwait(false))
-                        App.MainDispatcherQueue.TryEnqueue(() => ViewModel.InputMediaPosition = mediaPlayer.PlaybackSession.Position);
+                        App.MainDispatcherQueue.TryEnqueue(() => ViewModel.InputMediaPosition = mediaPlayer.Position);
                 }
                 _ = FrameTimerHandler(frameTimer);
 

@@ -1,0 +1,110 @@
+{
+    "MediaFileName": "sana running like an anime girl.mp4",
+    "FreezeCropSizeMode": true,
+    "CropFrames": [
+        {
+            "FrameNumber": 0,
+            "Rect": {
+                "CenterX": 1118,
+                "CenterY": 602,
+                "Height": 956,
+                "Width": 890
+            }
+        },
+        {
+            "FrameNumber": 14,
+            "Rect": {
+                "CenterX": 988,
+                "CenterY": 602,
+                "Height": 956,
+                "Width": 890
+            }
+        },
+        {
+            "FrameNumber": 35,
+            "Rect": {
+                "CenterX": 915,
+                "CenterY": 574,
+                "Height": 956,
+                "Width": 890
+            }
+        },
+        {
+            "FrameNumber": 52,
+            "Rect": {
+                "CenterX": 882,
+                "CenterY": 489,
+                "Height": 822,
+                "Width": 765
+            }
+        },
+        {
+            "FrameNumber": 71,
+            "Rect": {
+                "CenterX": 969,
+                "CenterY": 553,
+                "Height": 822,
+                "Width": 765
+            }
+        },
+        {
+            "FrameNumber": 90,
+            "Rect": {
+                "CenterX": 1103,
+                "CenterY": 611,
+                "Height": 893,
+                "Width": 831
+            }
+        },
+        {
+            "FrameNumber": 109,
+            "Rect": {
+                "CenterX": 1155,
+                "CenterY": 587,
+                "Height": 986,
+                "Width": 918
+            }
+        },
+        {
+            "FrameNumber": 129,
+            "Rect": {
+                "CenterX": 1079,
+                "CenterY": 546,
+                "Height": 1069,
+                "Width": 995
+            }
+        },
+        {
+            "FrameNumber": 146,
+            "Rect": {
+                "CenterX": 919,
+                "CenterY": 546,
+                "Height": 1069,
+                "Width": 995
+            }
+        },
+        {
+            "FrameNumber": 161,
+            "Rect": {
+                "CenterX": 497,
+                "CenterY": 546,
+                "Height": 1069,
+                "Width": 995
+            }
+        }
+    ],
+    "TrimmingMarkers": [
+        {
+            "FrameNumber": 0,
+            "TrimAfter": true
+        },
+        {
+            "FrameNumber": 430,
+            "TrimAfter": false
+        },
+        {
+            "FrameNumber": 596,
+            "TrimAfter": true
+        }
+    ]
+}

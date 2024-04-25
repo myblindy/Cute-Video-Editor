@@ -34,6 +34,10 @@
             <AppBarButton Icon="Video" AccessKey="E" Label="Export Video" ToolTipService.ToolTip="Export Video"
                           Command="{x:Bind ViewModel.ExportVideoCommand}"/>
             <AppBarSeparator/>
+            <AppBarToggleButton Icon="AttachCamera" AccessKey="F" Label="Freeze Crop Size" 
+                                ToolTipService.ToolTip="Freeze the crop size to start editing crop keyframes. If unfrozen (as it is initially), no crop keyframes are added or edited, and instead you can choose the size of the overall result."
+                                IsChecked="{x:Bind ViewModel.FreezeCropSizeMode, Mode=TwoWay}"/>
+            <AppBarSeparator/>
             <AppBarButton Icon="MapPin" AccessKey="M" Label="Mark" ToolTipService.ToolTip="Add Marker"
                           Command="{x:Bind ViewModel.AddMarkerCommand}"/>
             <AppBarButton Icon="Trim" AccessKey="T" Label="Trim" ToolTipService.ToolTip="Trim the media between markers"

@@ -6,8 +6,20 @@
     xmlns:local="using:CuteVideoEditor.Views.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:vm="using:CuteVideoEditor.ViewModels"
+    xmlns:vm="using:CuteVideoEditor.ViewModels" 
+    xmlns:models="using:CuteVideoEditor.Core.Models"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <x:Double x:Key="CropKeyFrameRadius">4</x:Double>
+        <x:Double x:Key="CropKeyFrameNegativeRadius">-4</x:Double>
+        <x:Double x:Key="CropKeyFrameDiameter">8</x:Double>
+        <Style x:Key="CropKeyFrameStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="{StaticResource CropKeyFrameDiameter}"/>
+            <Setter Property="Height" Value="{StaticResource CropKeyFrameDiameter}"/>
+            <Setter Property="Fill" Value="Orange"/>
+        </Style>
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -63,7 +75,7 @@
         </ItemsControl>
 
         <!-- non-disjunt markers -->
-        <ItemsControl Grid.Row="1" ItemsSource="{x:Bind NonDisjunctOutputMarkers, Mode=OneWay}" >
+        <ItemsControl Grid.Row="1" ItemsSource="{x:Bind NonDisjunctOutputMarkers, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
@@ -75,6 +87,27 @@
                           X2="{x:Bind local:TimeBarHeaderControl.GetXOffset(Position, TimeBarHeader)}"
                           Y2="20"
                           Stroke="Gray" StrokeDashArray="3 1" StrokeThickness="2"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- crop keyframes -->
+        <ItemsControl Grid.Row="1" ItemsSource="{x:Bind CropFrames, Mode=OneWay}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="local:TimeBarHeaderControlCropFrameEntry">
+                    <Ellipse Style="{StaticResource CropKeyFrameStyle}">
+                        <Ellipse.RenderTransform>
+                            <TransformGroup>
+                                <TranslateTransform X="{x:Bind local:TimeBarHeaderControl.GetXOffset(Position, TimeBarHeader)}" Y="6"/>
+                                <TranslateTransform X="{StaticResource CropKeyFrameNegativeRadius}"/>
+                            </TransformGroup>
+                        </Ellipse.RenderTransform>
+                    </Ellipse>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

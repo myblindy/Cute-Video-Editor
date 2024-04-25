@@ -24,9 +24,10 @@ public class CropFrameEntrySerializationModel
 
 public class SerializationModel
 {
-    public string? MediaFileName { get; set; }
-    public List<CropFrameEntrySerializationModel>? CropFrames { get; set; }
-    public List<TrimmingMarkerSerializationModel>? TrimmingMarkers { get; set; }
+    public required bool FreezeCropSizeMode { get; set; }
+    public required string MediaFileName { get; set; }
+    public required List<CropFrameEntrySerializationModel> CropFrames { get; set; }
+    public required List<TrimmingMarkerSerializationModel> TrimmingMarkers { get; set; }
 }
 
 public class SerializationMapperProfile : Profile

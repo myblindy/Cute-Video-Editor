@@ -139,8 +139,11 @@ public sealed partial class MainWindow : WindowEx
             Tabs.Remove(SelectedTab);
     }
 
-    public static string? GetTabName(string mediaFileName) =>
-        Path.GetFileName(mediaFileName);
+    public static string? GetTabName(string? projectFileName, string mediaFileName) =>
+        Path.GetFileName(GetTabToolTipName(projectFileName, mediaFileName));
+
+    public static string? GetTabToolTipName(string? projectFileName, string mediaFileName) =>
+        Path.GetFullPath(projectFileName ?? mediaFileName);
 }
 
 public partial class MainWindowTabEntry(MainPage page, MainWindow mainWindow) : ObservableObject

@@ -9,19 +9,42 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Canvas Background="Transparent">
-        <Canvas.Resources>
-            <Style x:Key="BoxLineStyle" TargetType="Rectangle">
-                <Setter Property="StrokeThickness" Value="1"/>
-                <Setter Property="IsHitTestVisible" Value="False"/>
-            </Style>
-            <Style x:Key="BoxLineShadowStyle" TargetType="Rectangle">
-                <Setter Property="StrokeThickness" Value="3"/>
-                <Setter Property="Stroke" Value="Black"/>
-                <Setter Property="IsHitTestVisible" Value="False"/>
-            </Style>
-        </Canvas.Resources>
+    <UserControl.Resources>
+        <Thickness x:Key="BoxLineShadowStyleThickness">3</Thickness>
+        <SolidColorBrush x:Key="ShadowColorBrush">Black</SolidColorBrush>
+        <Style x:Key="BoxLineShadowStyle" TargetType="Rectangle">
+            <Setter Property="StrokeThickness" Value="{StaticResource BoxLineShadowStyleThickness}"/>
+            <Setter Property="Stroke" Value="{StaticResource ShadowColorBrush}"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
 
+        <x:Double x:Key="ResizeHandleShadowRadius">6</x:Double>
+        <x:Double x:Key="ResizeHandleShadowNegativeRadius">-6</x:Double>
+        <x:Double x:Key="ResizeHandleShadowDiameter">12</x:Double>
+        <Style x:Key="ResizeHandleShadow" TargetType="Ellipse">
+            <Setter Property="Width" Value="{StaticResource ResizeHandleShadowDiameter}"/>
+            <Setter Property="Height" Value="{StaticResource ResizeHandleShadowDiameter}"/>
+            <Setter Property="Fill" Value="{StaticResource ShadowColorBrush}"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+
+        <Thickness x:Key="BoxLineStyleThickness">1</Thickness>
+        <Style x:Key="BoxLineStyle" TargetType="Rectangle">
+            <Setter Property="StrokeThickness" Value="{StaticResource BoxLineStyleThickness}"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+
+        <x:Double x:Key="ResizeHandleRadius">5</x:Double>
+        <x:Double x:Key="ResizeHandleNegativeRadius">-5</x:Double>
+        <x:Double x:Key="ResizeHandleDiameter">10</x:Double>
+        <Style x:Key="ResizeHandle" TargetType="Ellipse">
+            <Setter Property="Width" Value="{StaticResource ResizeHandleDiameter}"/>
+            <Setter Property="Height" Value="{StaticResource ResizeHandleDiameter}"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Canvas Background="Transparent">
         <Canvas.RenderTransform>
             <TranslateTransform X="{x:Bind local:CropBoxControl.GetX(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
                                 Y="{x:Bind local:CropBoxControl.GetY(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"/>
@@ -35,11 +58,32 @@
                 <TranslateTransform X="-1" Y="-1"/>
             </Rectangle.RenderTransform>
         </Rectangle>
+        <Ellipse Style="{StaticResource ResizeHandleShadow}">
+            <Ellipse.RenderTransform>
+                <TransformGroup>
+                    <!-- bottom right -->
+                    <TranslateTransform X="{x:Bind local:CropBoxControl.GetWidth(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
+                                        Y="{x:Bind local:CropBoxControl.GetHeight(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"/>
+                    <TranslateTransform X="{StaticResource ResizeHandleShadowNegativeRadius}" Y="{StaticResource ResizeHandleShadowNegativeRadius}"/>
+                </TransformGroup>
+            </Ellipse.RenderTransform>
+        </Ellipse>
 
         <!-- foreground -->
         <Rectangle Width="{x:Bind local:CropBoxControl.GetWidth(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
                    Height="{x:Bind local:CropBoxControl.GetHeight(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
                    Style="{StaticResource BoxLineStyle}"
                    Stroke="{x:Bind local:CropBoxControl.GetBrush(ViewModel.CurrentCropRect), Mode=OneWay}"/>
+        <Ellipse Style="{StaticResource ResizeHandle}"
+                 Fill="{x:Bind local:CropBoxControl.GetBrush(ViewModel.CurrentCropRect), Mode=OneWay}">
+            <Ellipse.RenderTransform>
+                <TransformGroup>
+                    <!-- bottom right -->
+                    <TranslateTransform X="{x:Bind local:CropBoxControl.GetWidth(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"
+                                        Y="{x:Bind local:CropBoxControl.GetHeight(ViewModel.CurrentCropRect, ViewModel.VideoOverlayScale), Mode=OneWay}"/>
+                    <TranslateTransform X="{StaticResource ResizeHandleNegativeRadius}" Y="{StaticResource ResizeHandleNegativeRadius}"/>
+                </TransformGroup>
+            </Ellipse.RenderTransform>
+        </Ellipse>
     </Canvas>
 </UserControl>
