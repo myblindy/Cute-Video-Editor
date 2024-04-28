@@ -7,6 +7,7 @@ using CuteVideoEditor.ViewModels.Dialogs;
 using CuteVideoEditor.Views;
 using CuteVideoEditor.Views.Dialogs;
 using FFmpegInteropX;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -43,6 +44,15 @@ public partial class App : Application
 
         host = Host.CreateDefaultBuilder()
             .UseContentRoot(AppContext.BaseDirectory)
+            .ConfigureAppConfiguration((context, config) =>
+            {
+                config.AddEnvironmentVariables();
+                config.AddJsonFile("appsettings.json", true);
+#if DEBUG
+                config.AddJsonFile($"appsettings.Development.json", true);
+#endif
+                //config.AddCommandLine(args);
+            })
             .ConfigureServices((context, services) =>
             {
                 // Default Activation Handler
@@ -70,13 +80,36 @@ public partial class App : Application
 
                 // Configuration
             })
-            .ConfigureLogging(context =>
-                context.AddDebug())
+            .ConfigureLogging((context, config) =>
+                config.AddConfiguration(context.Configuration.GetSection("Logging")))
             .Build();
 
         UnhandledException += App_UnhandledException;
 
+        //FFmpegInteropLogging.SetLogLevel(FFmpegInteropX.LogLevel.Trace);
         FFmpegInteropLogging.SetLogProvider(GetService<FFmpegLogProvider>());
+
+        var vm = GetService<MainViewModel>();
+        vm.LoadProjectFile(@"E:\gitrepos\Cute Video Editor\Samples\sana anime girl.cve");
+
+        using var transcoder = new FFmpegTranscode();
+        var outputParameters = new FFmpegTranscodeOutput
+        {
+            FileName = @"d:\temp\test-cve.webm",
+            Type = OutputType.Vp9,
+            CRF = 15,
+            FrameRate = 30,
+            PixelSize = new(vm.LargestOutputPixelSize.Width, vm.LargestOutputPixelSize.Height),
+            Preset = OutputPresetType.Medium,
+        };
+        transcoder.Run(new()
+        {
+            FileName = vm.MediaFileName!,
+            CropFrames = vm.CropFrames.Select(w => new FFmpegTranscodeInputCropFrameEntry(
+                w.FrameNumber, new(w.Rect.CenterX, w.Rect.CenterY, w.Rect.Width, w.Rect.Height))).ToList(),
+            TrimmingMarkers = vm.TrimmingMarkers.Select(w => new FFmpegTranscodeInputTrimmingMarkerEntry(
+                w.FrameNumber, w.TrimAfter)).ToList()
+        }, outputParameters);
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -99,7 +132,7 @@ class FFmpegLogProvider(ILogger<FFmpegLogProvider> logger) : ILogProvider
             FFmpegInteropX.LogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
             FFmpegInteropX.LogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
             FFmpegInteropX.LogLevel.Info => Microsoft.Extensions.Logging.LogLevel.Information,
-            FFmpegInteropX.LogLevel.Verbose => Microsoft.Extensions.Logging.LogLevel.Trace,
-            _ => Microsoft.Extensions.Logging.LogLevel.Debug
+            FFmpegInteropX.LogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
+            _ => Microsoft.Extensions.Logging.LogLevel.Trace
         }, message);
 }

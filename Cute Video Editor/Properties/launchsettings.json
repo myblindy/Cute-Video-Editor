@@ -2,7 +2,7 @@
   "profiles": {
     "Cute Video Editor (Unpackaged)": {
       "commandName": "Project",
-      "nativeDebugging": false
+      "nativeDebugging": true
     },
     "Cute Video Editor (Package)": {
       "commandName": "MsixPackage"
