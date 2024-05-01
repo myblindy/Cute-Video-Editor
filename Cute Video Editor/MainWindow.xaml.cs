@@ -1,17 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Helpers;
-using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.Views;
-using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using ReactiveUI;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 using Windows.Foundation;
 using Windows.UI.ViewManagement;
 using Windows.Win32;

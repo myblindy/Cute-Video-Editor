@@ -13,7 +13,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Windows.UI.Core;
 
 namespace CuteVideoEditor;
 

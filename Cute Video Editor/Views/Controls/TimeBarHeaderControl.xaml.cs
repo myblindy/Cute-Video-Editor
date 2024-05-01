@@ -5,9 +5,7 @@ using CuteVideoEditor.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using ReactiveUI;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 
 namespace CuteVideoEditor.Views.Controls;
 

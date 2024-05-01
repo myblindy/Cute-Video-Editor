@@ -1,6 +1,5 @@
 using Cute_Video_Editor.VmTests.Helpers;
 using CuteVideoEditor.ViewModels;
-using System.Runtime.Intrinsics.X86;
 
 namespace Cute_Video_Editor.VmTests;
 

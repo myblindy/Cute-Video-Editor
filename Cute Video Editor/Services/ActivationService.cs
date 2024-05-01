@@ -1,9 +1,7 @@
 ﻿using CuteVideoEditor.Activation;
 using CuteVideoEditor.Contracts.Services;
-using CuteVideoEditor.Views;
 
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace CuteVideoEditor.Services;
 

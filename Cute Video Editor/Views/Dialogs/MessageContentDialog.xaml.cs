@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Xaml;
 
 namespace CuteVideoEditor.Views.Dialogs;
 

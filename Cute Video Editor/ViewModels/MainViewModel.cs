@@ -13,9 +13,7 @@ using AutoMapper;
 using Windows.System;
 using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Helpers;
-using Windows.Foundation;
 using FFmpegInteropX;
-using Windows.UI.Popups;
 
 namespace CuteVideoEditor.ViewModels;
 

@@ -5,7 +5,6 @@ using Windows.Media.Playback;
 using Windows.Storage;
 using FFmpegInteropX;
 using System.Reactive.Linq;
-using System.Diagnostics;
 using CuteVideoEditor.Core.Helpers;
 
 namespace CuteVideoEditor.Views;
