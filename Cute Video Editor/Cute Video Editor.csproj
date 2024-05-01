@@ -23,6 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\Dialogs\MessageContentDialog.xaml" />
     <None Remove="Views\Dialogs\OperationProgressContentDialog.xaml" />
   </ItemGroup>
 
@@ -62,6 +63,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Dialogs\MessageContentDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Dialogs\OperationProgressContentDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

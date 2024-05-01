@@ -369,9 +369,8 @@ public partial class MainViewModel : ObservableRecipient
                 });
             });
 
-            await dialogService.ShowMessageDialog(
-                encodingResult ? "Encoding finished successfuly." : "Encoding failed.",
-                "Encoding finished");
+            await dialogService.ShowInformationMessageDialog("Encoding finished",
+                encodingResult ? "Encoding finished successfuly." : "Encoding failed.");
         }
     }
 

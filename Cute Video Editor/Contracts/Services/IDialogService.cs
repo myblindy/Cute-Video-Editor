@@ -11,5 +11,5 @@ public interface IDialogService
     Task<string?> SelectVideoFileAsync();
     Task<FFmpegTranscodeOutput?> SelectTranscodeOutputParameters(MainViewModel mainViewModel);
     Task<bool> ShowOperationProgressDialog(string? description, bool autoClose, Func<OperationProgressViewModel, Task> operation);
-    Task ShowMessageDialog(string content, string title);
+    Task ShowInformationMessageDialog(string content, string title);
 }

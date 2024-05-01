@@ -87,11 +87,6 @@ public class DialogService(IServiceProvider serviceProvider) : IDialogService
         return dlg.ViewModel.Result;
     }
 
-    public async Task ShowMessageDialog(string content, string title)
-    {
-        var resultDlg = new MessageDialog(content, title);
-        WinRT.Interop.InitializeWithWindow.Initialize(resultDlg, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
-
-        await resultDlg.ShowAsync();
-    }
+    public async Task ShowInformationMessageDialog(string title, string message) =>
+        await MessageContentDialog.Information(App.MainWindow.Content.XamlRoot, title, message);
 }
