@@ -14,4 +14,7 @@ public readonly struct SizeModel : IEquatable<SizeModel>
 
     public static bool operator ==(SizeModel left, SizeModel right) => left.Equals(right);
     public static bool operator !=(SizeModel left, SizeModel right) => !(left == right);
+
+    public static SizeModel operator *(SizeModel left, double r) =>
+        new((int)(left.Width * r), (int)(left.Height * r));
 }

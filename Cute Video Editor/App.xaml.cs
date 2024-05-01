@@ -74,6 +74,8 @@ public partial class App : Application
                 services.AddScoped<MainPage>();
                 services.AddScoped<ExportVideoViewModel>();
                 services.AddScoped<ExportVideoContentDialog>();
+                services.AddScoped<OperationProgressContentDialog>();
+                services.AddScoped<OperationProgressViewModel>();
 
                 // Mapper
                 services.AddAutoMapper(typeof(SerializationMapperProfile));
@@ -83,7 +85,7 @@ public partial class App : Application
             .ConfigureLogging((context, config) =>
                 config.AddConfiguration(context.Configuration.GetSection("Logging")))
             .Build();
-        
+
         UnhandledException += App_UnhandledException;
 
         //FFmpegInteropLogging.SetLogLevel(FFmpegInteropX.LogLevel.Trace);
@@ -91,7 +93,7 @@ public partial class App : Application
 
         //var vm = GetService<MainViewModel>();
         //vm.LoadProjectFile(@"E:\gitrepos\CuteVideoEditor\Samples\sana anime girl.cve");
-        
+
         //using var transcoder = new FFmpegTranscode();
         //var outputParameters = new FFmpegTranscodeOutput
         //{
@@ -111,15 +113,15 @@ public partial class App : Application
         //        w.FrameNumber, w.TrimAfter)).ToList()
         //}, outputParameters);
     }
-    
+
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
     }
-    
+
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
-        
+
         await GetService<IActivationService>().ActivateAsync(args);
     }
 }

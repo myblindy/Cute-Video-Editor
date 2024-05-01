@@ -1,10 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CuteVideoEditor.Contracts.Services;
-using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.ViewModels.Dialogs;
-using FFmpegInteropX;
 using Microsoft.UI.Xaml.Controls;
-using ReactiveUI;
+using Windows.Globalization.NumberFormatting;
 
 namespace CuteVideoEditor.Views.Dialogs;
 
@@ -12,12 +10,6 @@ namespace CuteVideoEditor.Views.Dialogs;
 public sealed partial class ExportVideoContentDialog : ContentDialog
 {
     private readonly IDialogService dialogService;
-
-    [ObservableProperty]
-    FFmpegTranscodeOutput? outputModel;
-
-    [ObservableProperty]
-    MainViewModel? mainViewModel;
 
     public ExportVideoViewModel ViewModel { get; }
 
@@ -27,13 +19,21 @@ public sealed partial class ExportVideoContentDialog : ContentDialog
         ViewModel = viewModel;
         InitializeComponent();
 
-        this.WhenAnyValue(x => x.OutputModel!.FileName).WhereNotNull().Subscribe(fn =>
-            ViewModel!.SelectOutputFileType(fn));
+        FrameRateMultiplierNumberBox.NumberFormatter = new DecimalFormatter()
+        {
+            FractionDigits = 3,
+            IntegerDigits = 1,
+            NumberRounder = new IncrementNumberRounder
+            {
+                Increment = 0.001,
+                RoundingAlgorithm = RoundingAlgorithm.RoundHalfUp
+            }
+        };
     }
 
     private async void BrowseOutputFileName(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (OutputModel is not null && await dialogService.SelectSaveVideoFileAsync(OutputModel.FileName) is { } outputFileName)
-            OutputModel.FileName = outputFileName;
+        if (await dialogService.SelectSaveVideoFileAsync(ViewModel.FileName) is { } outputFileName)
+            ViewModel.FileName = outputFileName;
     }
 }

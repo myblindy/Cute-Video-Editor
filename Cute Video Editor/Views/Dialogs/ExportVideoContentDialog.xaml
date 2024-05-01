@@ -5,9 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:CuteVideoEditor.Views.Dialogs"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:numberformatting="using:Windows.Globalization.NumberFormatting"
     mc:Ignorable="d"
-    Title="Export Video" MinWidth="900" PrimaryButtonText="Render" CloseButtonText="Cancel">
+    Title="Export Video" MinWidth="900" 
+    CloseButtonText="Cancel"
+    PrimaryButtonText="Render" IsPrimaryButtonEnabled="{x:Bind ViewModel.IsValid}">
 
     <ContentDialog.Resources>
         <Style x:Key="LabelStyle" TargetType="TextBlock">
@@ -33,19 +35,23 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Output File Name:" Style="{StaticResource LabelStyle}"/>
-        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"  Text="{x:Bind OutputModel.FileName, Mode=TwoWay}"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"  Text="{x:Bind ViewModel.FileName, Mode=TwoWay}"/>
         <Button Grid.Row="0" Grid.Column="3" Content="..." Click="BrowseOutputFileName"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" Text="Output File Type:" Style="{StaticResource LabelStyle}"/>
         <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" 
                   ItemsSource="{x:Bind ViewModel.OutputFileTypes, Mode=OneWay}" 
-                  SelectedItem="{x:Bind ViewModel.SelectedOutputFileType, Mode=TwoWay}"/>
+                  SelectedItem="{x:Bind ViewModel.Type, Mode=TwoWay}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Text="CRF:" Style="{StaticResource LabelStyle}"/>
-        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind OutputModel.CRF, Mode=OneTime}"
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Crf, Mode=OneTime}"
                    VerticalAlignment="Center"/>
         <Slider Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
-                Minimum="0" MaxHeight="63" Value="{x:Bind OutputModel.CRF, Mode=TwoWay}"/>
+                Minimum="0" MaxHeight="63" Value="{x:Bind ViewModel.Crf, Mode=TwoWay}"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Frame Rate Multiplier:" Style="{StaticResource LabelStyle}"/>
+        <NumberBox x:Name="FrameRateMultiplierNumberBox" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" 
+                   Value="{x:Bind ViewModel.FrameRateMultiplier}"/>
 
     </Grid>
 </ContentDialog>

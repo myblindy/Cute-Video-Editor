@@ -15,6 +15,7 @@ using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Helpers;
 using Windows.Foundation;
 using FFmpegInteropX;
+using Windows.UI.Popups;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -338,15 +339,39 @@ public partial class MainViewModel : ObservableRecipient
     {
         if (await dialogService.SelectTranscodeOutputParameters(this) is { } outputParameters)
         {
-            using var transcoder = new FFmpegTranscode();
-            transcoder.Run(new()
+            var encodingResult = await dialogService.ShowOperationProgressDialog("Please wait, encoding...", true, async vm =>
             {
-                FileName = MediaFileName!,
-                CropFrames = CropFrames.Select(w => new FFmpegTranscodeInputCropFrameEntry(
-                    w.FrameNumber, new(w.Rect.CenterX, w.Rect.CenterY, w.Rect.Width, w.Rect.Height))).ToList(),
-                TrimmingMarkers = TrimmingMarkers.Select(w => new FFmpegTranscodeInputTrimmingMarkerEntry(
-                    w.FrameNumber, w.TrimAfter)).ToList()
-            }, outputParameters);
+                var totalFrames = GetFrameNumberFromPosition(OutputMediaDuration);
+                var processedFrames = 0;
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        using var transcoder = new FFmpegTranscode();
+                        transcoder.FrameOutputProgress += (s, e) =>
+                        {
+                            if (Interlocked.Increment(ref processedFrames) is { } processedFramesValue && processedFramesValue % 30 == 0)
+                                App.MainDispatcherQueue.TryEnqueue(() => vm.Progress = (double)processedFramesValue / totalFrames);
+                        };
+
+                        transcoder.Run(new()
+                        {
+                            FileName = MediaFileName!,
+                            CropFrames = CropFrames.Select(w => new FFmpegTranscodeInputCropFrameEntry(
+                                w.FrameNumber, new(w.Rect.CenterX, w.Rect.CenterY, w.Rect.Width, w.Rect.Height))).ToList(),
+                            TrimmingMarkers = TrimmingMarkers.Select(w => new FFmpegTranscodeInputTrimmingMarkerEntry(
+                                w.FrameNumber, w.TrimAfter)).ToList()
+                        }, outputParameters);
+
+                        vm.Result = true;
+                    }
+                    catch { vm.Result = false; }
+                });
+            });
+
+            await dialogService.ShowMessageDialog(
+                encodingResult ? "Encoding finished successfuly." : "Encoding failed.",
+                "Encoding finished");
         }
     }
 

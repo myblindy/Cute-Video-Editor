@@ -1,10 +1,12 @@
 ﻿using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.ViewModels;
+using CuteVideoEditor.ViewModels.Dialogs;
 using CuteVideoEditor.Views.Dialogs;
 using FFmpegInteropX;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
+using Windows.UI.Popups;
 
 namespace CuteVideoEditor.Services;
 
@@ -49,8 +51,7 @@ public class DialogService(IServiceProvider serviceProvider) : IDialogService
         {
             FileTypeChoices =
             {
-                ["H264 MP4 Files"] = [".mp4"],
-                ["WebM VP8/9 Files"] = [".webm"]
+                ["Video Files"] = [".webm",".mp4"],
             },
             SuggestedFileName = filename
         };
@@ -62,19 +63,35 @@ public class DialogService(IServiceProvider serviceProvider) : IDialogService
     {
         var dlg = serviceProvider.GetRequiredService<ExportVideoContentDialog>();
         dlg.XamlRoot = App.MainWindow.Content.XamlRoot;
-        dlg.MainViewModel = mainViewModel;
+        dlg.ViewModel.FileName = mainViewModel.ProjectFileName;
+        dlg.ViewModel.Type = OutputType.Vp9;
 
-        var largestOutputPixelSize = mainViewModel.LargestOutputPixelSize;
-        dlg.OutputModel = new()
-        {
-            FileName = Path.ChangeExtension(mainViewModel.MediaFileName, "webm"),
-            Type = OutputType.Vp9,
-            CRF = 12,
-            FrameRate = mainViewModel.MediaFrameRate,
-            PixelSize = new(largestOutputPixelSize.Width, largestOutputPixelSize.Height),
-            Preset = OutputPresetType.Medium
-        };
+        return await dlg.ShowAsync() is ContentDialogResult.Primary
+            ? dlg.ViewModel.BuildTranscodeOutputProperties(mainViewModel)
+            : null;
+    }
 
-        return await dlg.ShowAsync() is ContentDialogResult.Primary ? dlg.OutputModel : null;
+    public async Task<bool> ShowOperationProgressDialog(string? description, bool autoClose,
+        Func<OperationProgressViewModel, Task> operation)
+    {
+        var dlg = serviceProvider.GetRequiredService<OperationProgressContentDialog>();
+        dlg.XamlRoot = App.MainWindow.Content.XamlRoot;
+        dlg.ViewModel.Description = description;
+
+        var showTask = dlg.ShowAsync();
+        await operation(dlg.ViewModel);
+
+        if (autoClose) dlg.Hide();
+        await showTask;
+
+        return dlg.ViewModel.Result;
+    }
+
+    public async Task ShowMessageDialog(string content, string title)
+    {
+        var resultDlg = new MessageDialog(content, title);
+        WinRT.Interop.InitializeWithWindow.Initialize(resultDlg, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
+
+        await resultDlg.ShowAsync();
     }
 }
