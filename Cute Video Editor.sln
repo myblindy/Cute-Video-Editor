@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cute Video Editor.Core", "C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FFmpegInteropX", "FFmpegInteropX\Source\FFmpegInteropX.vcxproj", "{9CFA3B3E-B7AF-4629-84E2-C962C5B046B1}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Cute Video Editor.SharedAVLib", "Cute Video Editor.SharedAVLib\Cute Video Editor.SharedAVLib.shproj", "{0041E6C0-CDD5-41E1-8C43-DC824216692F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cute Video Editor.VmTests", "Cute Video Editor.VmTests\Cute Video Editor.VmTests.csproj", "{68C8CA17-859C-45B0-8B17-27F1161BA16C}"
 EndProject
 Global
@@ -211,9 +209,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D86ABB6C-1D5B-47EC-9BAD-F265902FB4BD}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Cute Video Editor.SharedAVLib\Cute Video Editor.SharedAVLib.projitems*{0041e6c0-cdd5-41e1-8c43-dc824216692f}*SharedItemsImports = 13
-		Cute Video Editor.SharedAVLib\Cute Video Editor.SharedAVLib.projitems*{104f4c2d-7d77-4a73-8a34-ff6370ddf3c7}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

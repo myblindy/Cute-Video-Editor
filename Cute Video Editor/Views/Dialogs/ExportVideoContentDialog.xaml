@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="Export Video" PrimaryButtonText="Render" CloseButtonText="Cancel">
+    Title="Export Video" MinWidth="900" PrimaryButtonText="Render" CloseButtonText="Cancel">
 
     <ContentDialog.Resources>
         <Style x:Key="LabelStyle" TargetType="TextBlock">
@@ -17,6 +17,7 @@
 
     <Grid ColumnSpacing="5">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
@@ -32,13 +33,19 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Output File Name:" Style="{StaticResource LabelStyle}"/>
-        <TextBox Grid.Row="0" Grid.Column="1" Text="{x:Bind OutputModel.FileName, Mode=TwoWay}"/>
-        <Button Grid.Row="0" Grid.Column="2" Content="..." Click="BrowseOutputFileName"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"  Text="{x:Bind OutputModel.FileName, Mode=TwoWay}"/>
+        <Button Grid.Row="0" Grid.Column="3" Content="..." Click="BrowseOutputFileName"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" Text="Output File Type:" Style="{StaticResource LabelStyle}"/>
-        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" 
+        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" 
                   ItemsSource="{x:Bind ViewModel.OutputFileTypes, Mode=OneWay}" 
                   SelectedItem="{x:Bind ViewModel.SelectedOutputFileType, Mode=TwoWay}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="CRF:" Style="{StaticResource LabelStyle}"/>
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind OutputModel.CRF, Mode=OneTime}"
+                   VerticalAlignment="Center"/>
+        <Slider Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                Minimum="0" MaxHeight="63" Value="{x:Bind OutputModel.CRF, Mode=TwoWay}"/>
 
     </Grid>
 </ContentDialog>

@@ -64,5 +64,7 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-  <Import Project="..\Cute Video Editor.SharedAVLib\Cute Video Editor.SharedAVLib.projitems" Label="Shared" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;..\FFmpegInteropX\Output\FFmpegInteropX\$(Platform)\$(Configuration)_WinUI\*&quot; &quot;$(OutDir)&quot; /d /q /s /i /r /m /y" />
+  </Target>
 </Project>
