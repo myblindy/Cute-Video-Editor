@@ -6,7 +6,7 @@ namespace Cute_Video_Editor.VmTests;
 [TestClass]
 public class TrimmingMarkerTests
 {
-    static MainViewModel CreateDefaultTestViewModel()
+    static VideoEditorViewModel CreateDefaultTestViewModel()
     {
         var vm = Support.CreateViewModel();
         vm.MediaDuration = TimeSpan.FromMinutes(2);

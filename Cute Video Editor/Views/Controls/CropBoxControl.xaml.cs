@@ -13,10 +13,10 @@ namespace CuteVideoEditor.Views.Controls;
 public sealed partial class CropBoxControl : UserControl
 {
     public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register(nameof(ViewModel), typeof(MainViewModel), typeof(CropBoxControl), new PropertyMetadata(null));
-    public MainViewModel? ViewModel
+        DependencyProperty.Register(nameof(ViewModel), typeof(VideoEditorViewModel), typeof(CropBoxControl), new PropertyMetadata(null));
+    public VideoEditorViewModel? ViewModel
     {
-        get { return (MainViewModel?)GetValue(ViewModelProperty); }
+        get { return (VideoEditorViewModel?)GetValue(ViewModelProperty); }
         set { SetValue(ViewModelProperty, value); }
     }
 

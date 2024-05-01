@@ -44,7 +44,7 @@ public partial class ExportVideoViewModel : ObservableObject
             });
     }
 
-    public FFmpegTranscodeOutput BuildTranscodeOutputProperties(MainViewModel mainViewModel) => new(
+    public FFmpegTranscodeOutput BuildTranscodeOutputProperties(VideoEditorViewModel mainViewModel) => new(
         FileName, Type, Crf, FrameRateMultiplier, (mainViewModel.LargestOutputPixelSize * PixelSizeMultiplier).ToWFSize(),
         OutputPresetType.Medium);
 }

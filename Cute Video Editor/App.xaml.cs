@@ -69,8 +69,8 @@ public partial class App : Application
                 // Core Services
 
                 // Views and ViewModels
-                services.AddScoped<MainViewModel>();
-                services.AddScoped<MainPage>();
+                services.AddScoped<VideoEditorViewModel>();
+                services.AddScoped<VideoEditorPage>();
                 services.AddScoped<ExportVideoViewModel>();
                 services.AddScoped<ExportVideoContentDialog>();
                 services.AddScoped<OperationProgressContentDialog>();

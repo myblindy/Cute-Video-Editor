@@ -11,11 +11,11 @@ static class Support
 {
     public static IHost BuildHost() => Host.CreateDefaultBuilder()
         .ConfigureServices((_, services) => services
-            .AddScoped<MainViewModel>()
+            .AddScoped<VideoEditorViewModel>()
             .AddScoped(_ => Mock.Of<IDialogService>())
             .AddScoped(_ => Mock.Of<IMapper>()))
         .Build();
 
-    public static MainViewModel CreateViewModel() =>
-        BuildHost().Services.GetRequiredService<MainViewModel>();
+    public static VideoEditorViewModel CreateViewModel() =>
+        BuildHost().Services.GetRequiredService<VideoEditorViewModel>();
 }

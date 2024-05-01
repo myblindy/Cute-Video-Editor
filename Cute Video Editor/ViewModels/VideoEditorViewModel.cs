@@ -17,7 +17,7 @@ using FFmpegInteropX;
 
 namespace CuteVideoEditor.ViewModels;
 
-public partial class MainViewModel : ObservableRecipient
+public partial class VideoEditorViewModel : ObservableRecipient
 {
     private readonly IDialogService dialogService;
     private readonly IMapper mapper;
@@ -372,7 +372,7 @@ public partial class MainViewModel : ObservableRecipient
         }
     }
 
-    public MainViewModel(IDialogService dialogService, IMapper mapper)
+    public VideoEditorViewModel(IDialogService dialogService, IMapper mapper)
     {
         this.dialogService = dialogService;
         this.mapper = mapper;

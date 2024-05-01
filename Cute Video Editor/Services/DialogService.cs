@@ -58,7 +58,7 @@ public class DialogService(IServiceProvider serviceProvider) : IDialogService
         return await picker.PickSaveFileAsync() is { } file ? file.Path : null;
     }
 
-    public async Task<FFmpegTranscodeOutput?> SelectTranscodeOutputParameters(MainViewModel mainViewModel)
+    public async Task<FFmpegTranscodeOutput?> SelectTranscodeOutputParameters(VideoEditorViewModel mainViewModel)
     {
         var dlg = serviceProvider.GetRequiredService<ExportVideoContentDialog>();
         dlg.XamlRoot = App.MainWindow.Content.XamlRoot;

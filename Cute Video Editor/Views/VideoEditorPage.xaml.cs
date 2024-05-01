@@ -9,15 +9,15 @@ using CuteVideoEditor.Core.Helpers;
 
 namespace CuteVideoEditor.Views;
 
-public sealed partial class MainPage : Page
+public sealed partial class VideoEditorPage : Page
 {
-    public MainViewModel ViewModel { get; }
+    public VideoEditorViewModel ViewModel { get; }
 
     readonly MediaPlayer mediaPlayer = new();
     PeriodicTimer? frameTimer;
     FFmpegMediaSource? mediaSource;
 
-    public MainPage(MainViewModel mainViewModel)
+    public VideoEditorPage(VideoEditorViewModel mainViewModel)
     {
         ViewModel = mainViewModel;
         InitializeComponent();

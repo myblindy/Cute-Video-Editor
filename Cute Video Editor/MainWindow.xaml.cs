@@ -99,7 +99,7 @@ public sealed partial class MainWindow : WindowEx
         // perhaps this would be better to send the key data, and have the vm handle it? 
         // or the page?
 
-        MainViewModel? GetActiveViewModel() => SelectedTab?.Page.ViewModel;
+        VideoEditorViewModel? GetActiveViewModel() => SelectedTab?.Page.ViewModel;
 
         if (code >= 0)
         {
@@ -120,7 +120,7 @@ public sealed partial class MainWindow : WindowEx
         if (await dialogService.SelectVideoFileAsync() is { } mediaFileName)
         {
             using var scope = App.GetService<IServiceScopeFactory>().CreateScope();
-            var tabPage = scope.ServiceProvider.GetRequiredService<MainPage>();
+            var tabPage = scope.ServiceProvider.GetRequiredService<VideoEditorPage>();
             tabPage.ViewModel.LoadProjectFile(mediaFileName);
 
             MainWindowTabEntry tabEntry = new(tabPage, this);
@@ -142,9 +142,9 @@ public sealed partial class MainWindow : WindowEx
         Path.GetFullPath(projectFileName ?? mediaFileName);
 }
 
-public partial class MainWindowTabEntry(MainPage page, MainWindow mainWindow) : ObservableObject
+public partial class MainWindowTabEntry(VideoEditorPage page, MainWindow mainWindow) : ObservableObject
 {
-    public MainPage Page { get; } = page;
+    public VideoEditorPage Page { get; } = page;
     public MainWindow MainWindow { get; } = mainWindow;
     [ObservableProperty]
     Visibility visibility = Visibility.Visible;

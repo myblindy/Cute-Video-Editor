@@ -36,11 +36,11 @@ public sealed partial class TimeBarHeaderControl : UserControl
         set { SetValue(PositionProperty, value); }
     }
 
-    public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(nameof(ViewModel), typeof(MainViewModel), typeof(TimeBarHeaderControl),
+    public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(nameof(ViewModel), typeof(VideoEditorViewModel), typeof(TimeBarHeaderControl),
         new PropertyMetadata(null, (s, e) => ((TimeBarHeaderControl)s).OnViewModelChanged()));
-    public MainViewModel? ViewModel
+    public VideoEditorViewModel? ViewModel
     {
-        get { return (MainViewModel?)GetValue(ViewModelProperty); }
+        get { return (VideoEditorViewModel?)GetValue(ViewModelProperty); }
         set { SetValue(ViewModelProperty, value); }
     }
 
@@ -157,7 +157,7 @@ public readonly struct TimeBarHeaderControlCropFrameEntry
     public readonly TimeSpan Position;
     public readonly TimeBarHeaderControl TimeBarHeader;
 
-    public TimeBarHeaderControlCropFrameEntry(MainViewModel vm, CropFrameEntryModel cropFrame, TimeBarHeaderControl timeBarHeader) =>
+    public TimeBarHeaderControlCropFrameEntry(VideoEditorViewModel vm, CropFrameEntryModel cropFrame, TimeBarHeaderControl timeBarHeader) =>
         (Position, TimeBarHeader) =
-            (vm.GetPositionFromFrameNumber(vm.GetOutputFrameNumberFromInputFrameNumber(cropFrame.FrameNumber)), timeBarHeader);
+            (vm.GetPositionFromFrameNumber(cropFrame.FrameNumber), timeBarHeader);
 }
