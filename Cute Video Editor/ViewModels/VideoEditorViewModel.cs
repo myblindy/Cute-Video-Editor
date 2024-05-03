@@ -371,7 +371,11 @@ public partial class VideoEditorViewModel : ObservableRecipient
             // move every crop frame back to fill in the space (they're in input space)
             for (int i = 0; i < CropFrames.Count; ++i)
                 if (CropFrames[i].FrameNumber > frameStart)
-                    CropFrames[i] = new(CropFrames[i].FrameNumber - frameDuration, CropFrames[i].Rect);
+                {
+                    var (fn, rect) = (CropFrames[i].FrameNumber, CropFrames[i].Rect);
+                    CropFrames.RemoveAt(i);
+                    CropFrames.Insert(i, new(fn - frameDuration, rect));
+                }
 
             EnsureCropKeyFramesExistForTrimmedSegmentBorders();
             OnPropertyChanged(nameof(OutputMediaDuration));
