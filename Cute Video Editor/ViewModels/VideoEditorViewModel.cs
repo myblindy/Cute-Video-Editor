@@ -127,66 +127,101 @@ public partial class VideoEditorViewModel : ObservableRecipient
 
     public CropRectModel CurrentCropRect
     {
-        get
+        get => GetCropRectAt(CurrentOutputFrameNumber);
+        set => MaterializeCropKeyFrame(CurrentOutputFrameNumber, value.Rect);
+    }
+
+    public CropRectModel GetCropRectAt(long outputFrameNumber)
+    {
+        if (CropFrames.Count == 0 || MediaFrameRate == 0 || MediaDuration == default)
+            return new(default, CropRectType.None);
+        else if (!FreezeCropSizeMode)
+            return new(CropFrames[0].Rect, CropRectType.FirstFrameUnfrozen);
+        else
         {
-            if (CropFrames.Count == 0 || MediaFrameRate == 0 || MediaDuration == default)
-                return new(default, CropRectType.None);
-            else if (!FreezeCropSizeMode)
-                return new(CropFrames[0].Rect, CropRectType.FirstFrameUnfrozen);
+            if (CropFrames.FirstOrDefault(x => x.FrameNumber == outputFrameNumber) is { Rect: { Width: > 0, Height: > 0 } } cropFrame)
+                return new(cropFrame.Rect, CropRectType.KeyFrame);
             else
             {
-                var frameNumber = CurrentOutputFrameNumber;
-                if (CropFrames.FirstOrDefault(x => x.FrameNumber == frameNumber) is { Rect: { Width: > 0, Height: > 0 } } cropFrame)
-                    return new(cropFrame.Rect, CropRectType.KeyFrame);
-                else
-                {
-                    // extrapolate
-                    if (frameNumber > CropFrames[^1].FrameNumber)
-                        return new(CropFrames[^1].Rect, CropRectType.Interpolated);
+                // extrapolate
+                if (outputFrameNumber > CropFrames[^1].FrameNumber)
+                    return new(CropFrames[^1].Rect, CropRectType.Interpolated);
 
-                    // interpolate
-                    if (CropFrames.TakeWhile(w => w.FrameNumber < frameNumber).Count() is { } idx
-                        && idx >= 0 && idx < CropFrames.Count)
-                    {
-                        return new(RectModel.Interpolate(CropFrames[idx - 1].Rect, CropFrames[idx].Rect,
-                            (frameNumber - CropFrames[idx - 1].FrameNumber) / (double)(CropFrames[idx].FrameNumber - CropFrames[idx - 1].FrameNumber)), CropRectType.Interpolated);
-                    }
+                // interpolate
+                if (CropFrames.TakeWhile(w => w.FrameNumber < outputFrameNumber).Count() is { } idx
+                    && idx >= 0 && idx < CropFrames.Count)
+                {
+                    return new(RectModel.Interpolate(CropFrames[idx - 1].Rect, CropFrames[idx].Rect,
+                        (outputFrameNumber - CropFrames[idx - 1].FrameNumber) / (double)(CropFrames[idx].FrameNumber - CropFrames[idx - 1].FrameNumber)), CropRectType.Interpolated);
                 }
             }
-
-            throw new InvalidOperationException();
         }
-        set
+
+        throw new InvalidOperationException();
+    }
+
+    public void MaterializeCropKeyFrame(long outputFrameNumber, RectModel? rect = null)
+    {
+        if (MediaFrameRate == 0 || MediaDuration == default)
+            return;
+
+        if (!FreezeCropSizeMode && rect.HasValue)
         {
-            if (MediaFrameRate == 0 || MediaDuration == default)
-                return;
+            CropFrames[0] = new(0, rect.Value);
+            OnPropertyChanged(nameof(CurrentCropRect));
+            return;
+        }
 
-            if (!FreezeCropSizeMode)
+        var existingCropFrameIndex = CropFrames.FindIndex(x => x.FrameNumber == outputFrameNumber);
+        if (existingCropFrameIndex < 0)
+        {
+            // materialize the crop frame
+            // Find the index to insert the new crop frame
+            int insertIndex = CropFrames.FindLastIndex(x => x.FrameNumber <= outputFrameNumber);
+            rect ??= GetCropRectAt(outputFrameNumber).Rect;
+            if (insertIndex == -1)
+                CropFrames.Insert(0, new(outputFrameNumber, rect.Value));
+            else
+                CropFrames.Insert(insertIndex + 1, new(outputFrameNumber, rect.Value));
+            OnPropertyChanged(nameof(CurrentCropRect));
+        }
+        else
+        {
+            rect ??= GetCropRectAt(outputFrameNumber).Rect;
+            if (CropFrames[existingCropFrameIndex].Rect != rect)
             {
-                CropFrames[0] = new(0, value.Rect);
-                OnPropertyChanged(nameof(CurrentCropRect));
-                return;
-            }
-
-            var frameNumber = CurrentOutputFrameNumber;
-            var existingCropFrameIndex = CropFrames.FindIndex(x => x.FrameNumber == frameNumber);
-            if (existingCropFrameIndex < 0)
-            {
-                // materialize the crop frame
-                // Find the index to insert the new crop frame
-                int insertIndex = CropFrames.FindLastIndex(x => x.FrameNumber <= frameNumber);
-                if (insertIndex == -1)
-                    CropFrames.Insert(0, new(frameNumber, value.Rect));
-                else
-                    CropFrames.Insert(insertIndex + 1, new(frameNumber, value.Rect));
-                OnPropertyChanged(nameof(CurrentCropRect));
-            }
-            else if (CropFrames[existingCropFrameIndex].Rect != value.Rect)
-            {
-                CropFrames[existingCropFrameIndex] = new(frameNumber, value.Rect);
+                CropFrames[existingCropFrameIndex] = new(outputFrameNumber, rect.Value);
                 OnPropertyChanged(nameof(CurrentCropRect));
             }
         }
+    }
+
+    void EnsureCropKeyFramesExistForTrimmedSegmentBorders()
+    {
+        var (lastTrimStart, lastTrimAfter) = (-1L, false);
+        var totalOutputFrameCount = GetFrameNumberFromPosition(OutputMediaDuration);
+        foreach (var trim in TrimmingMarkers)
+        {
+            var (trimFrameStart, trimFrameEnd) = (trim.FrameNumber,
+                TrimmingMarkers.LastOrDefault(w => w.FrameNumber < trim.FrameNumber) is { } prevTrim ? prevTrim.FrameNumber : MediaDuration.TotalSeconds * MediaFrameRate);
+
+            if (lastTrimStart == -1 || trim.TrimAfter != lastTrimAfter)
+            {
+                // trim border, ensure crop key frames exist on the left side of a switch between non-trim to trim
+                if (!lastTrimAfter)
+                {
+                    if (trimFrameStart > 0)
+                        MaterializeCropKeyFrame(trimFrameStart - 1);
+                    MaterializeCropKeyFrame(trimFrameStart);
+                }
+
+                lastTrimStart = trimFrameStart;
+                lastTrimAfter = trim.TrimAfter;
+            }
+        }
+
+        // remove all crop key frames outside of the output duration
+        CropFrames.RemoveAll(w => w.FrameNumber < 0 || w.FrameNumber > totalOutputFrameCount);
     }
 
     partial void OnMediaPixelSizeChanged(SizeModel value)
@@ -325,9 +360,24 @@ public partial class VideoEditorViewModel : ObservableRecipient
     void AddTrim()
     {
         var inputFrameNumber = CurrentInputFrameNumber;
-        if (TrimmingMarkers.LastOrDefault(w => w.FrameNumber < inputFrameNumber) is { } marker)
+        if (TrimmingMarkers.LastOrDefault(w => w.FrameNumber < inputFrameNumber) is { } marker && !marker.TrimAfter)
         {
             marker.TrimAfter = true;
+
+            var (frameStart, frameEnd) = (marker.FrameNumber,
+                (long)(TrimmingMarkers.LastOrDefault(w => w.FrameNumber < marker.FrameNumber) is { } prevTrim ? prevTrim.FrameNumber : MediaDuration.TotalSeconds * MediaFrameRate));
+            var frameDuration = frameEnd - frameStart;
+
+            // move every crop frame back to fill in the space (they're in input space)
+            for (int i = 0; i < CropFrames.Count; ++i)
+                if (CropFrames[i].FrameNumber > frameStart)
+                {
+                    var (fn, rect) = (CropFrames[i].FrameNumber, CropFrames[i].Rect);
+                    CropFrames.RemoveAt(i);
+                    CropFrames.Insert(i, new(fn - frameDuration, rect));
+                }
+
+            EnsureCropKeyFramesExistForTrimmedSegmentBorders();
             OnPropertyChanged(nameof(OutputMediaDuration));
             OnPropertyChanged(nameof(OutputMediaPosition));
         }

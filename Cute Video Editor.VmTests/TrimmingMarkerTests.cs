@@ -271,4 +271,104 @@ public class TrimmingMarkerTests
                 TimeSpan.FromSeconds(10)
             ]);
     }
+
+    [TestMethod]
+    public void AutoCropKeyFramesOnTrimmingMidEnd()
+    {
+        var vm = CreateDefaultTestViewModel();
+
+        void AssertCropKeyFrames(long[] expectedFrameNumbers) =>
+            CollectionAssert.AreEqual(expectedFrameNumbers, vm.CropFrames.Select(w => w.FrameNumber).ToList());
+
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(25);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
+    }
+
+    [TestMethod]
+    public void AutoCropKeyFramesOnTrimmingMidStart()
+    {
+        var vm = CreateDefaultTestViewModel();
+
+        void AssertCropKeyFrames(long[] expectedFrameNumbers) =>
+            CollectionAssert.AreEqual(expectedFrameNumbers, vm.CropFrames.Select(w => w.FrameNumber).ToList());
+
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+    }
+
+    [TestMethod]
+    public void AutoCropKeyFramesShrinkingOnRepeatedTrims()
+    {
+        var vm = CreateDefaultTestViewModel();
+
+        void AssertCropKeyFrames(long[] expectedFrameNumbers) =>
+            CollectionAssert.AreEqual(expectedFrameNumbers, vm.CropFrames.Select(w => w.FrameNumber).ToList());
+
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(30);
+        var frameMarker3 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(35);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0, frameMarker3 - 1, frameMarker3]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(25);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0, frameMarker2 - 1, frameMarker2]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
+
+        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.AddTrimCommand.Execute(null);
+        AssertCropKeyFrames([0]);
+    }
 }

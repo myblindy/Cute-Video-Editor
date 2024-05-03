@@ -59,4 +59,11 @@ public static class ObservableCollectionExtensions
 
     public static void ResetSync<TDst>(this ObservableCollection<TDst> target) =>
         synchronizedObservableCollections[target]();
+
+    public static void RemoveAll<T>(this ObservableCollection<T> collection, Func<T, bool> predicate)
+    {
+        for (int i = collection.Count - 1; i >= 0; i--)
+            if (predicate(collection[i]))
+                collection.RemoveAt(i);
+    }
 }
