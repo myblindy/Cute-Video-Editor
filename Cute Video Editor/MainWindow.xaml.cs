@@ -96,16 +96,14 @@ public sealed partial class MainWindow : WindowEx
 
     private LRESULT KeyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
     {
-        // perhaps this would be better to send the key data, and have the vm handle it? 
-        // or the page?
-
         VideoEditorViewModel? GetActiveViewModel() => SelectedTab?.Page.ViewModel;
 
         if (code >= 0)
         {
             var up = (lParam & 0x80000000) != 0;
             var vk = (Windows.System.VirtualKey)(nuint)wParam;
-            if (GetActiveViewModel()?.ProcessKey(vk, up) is true)
+            var ctrl = (PInvoke.GetAsyncKeyState((int)Windows.System.VirtualKey.Control) & 0x8000) != 0;
+            if (GetActiveViewModel()?.ProcessKey(vk, ctrl, up) is true)
                 return default;
         }
 

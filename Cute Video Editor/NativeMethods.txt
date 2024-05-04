@@ -2,3 +2,4 @@ SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx
 GetCurrentThreadId
+GetAsyncKeyState
