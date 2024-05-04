@@ -5,7 +5,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:CuteVideoEditor.Views.Dialogs"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:numberformatting="using:Windows.Globalization.NumberFormatting"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:numberformatting="using:Windows.Globalization.NumberFormatting"
+    xmlns:vm="using:CuteVideoEditor.ViewModels.Dialogs"
     mc:Ignorable="d"
     Title="Export Video" MinWidth="900" 
     CloseButtonText="Cancel"
@@ -44,14 +46,25 @@
                   SelectedItem="{x:Bind ViewModel.Type, Mode=TwoWay}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Text="CRF:" Style="{StaticResource LabelStyle}"/>
-        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Crf, Mode=OneTime}"
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.Crf, Mode=OneWay}"
                    VerticalAlignment="Center"/>
         <Slider Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
                 Minimum="0" MaxHeight="63" Value="{x:Bind ViewModel.Crf, Mode=TwoWay}"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" Text="Frame Rate Multiplier:" Style="{StaticResource LabelStyle}"/>
-        <NumberBox x:Name="FrameRateMultiplierNumberBox" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" 
-                   Value="{x:Bind ViewModel.FrameRateMultiplier}"/>
+        <Grid Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <NumberBox Grid.Row="0" x:Name="FrameRateMultiplierNumberBox" Value="{x:Bind ViewModel.FrameRateMultiplier, Mode=TwoWay}"/>
+            <TextBlock Grid.Row="1">
+                <Run Text="Original:&#160;"/>
+                <Run Text="{x:Bind vm:ExportVideoViewModel.GetPrettyFrameRate(ViewModel.OriginalFrameRate, 1), Mode=OneWay}"/>
+                <Run Text="&#160;|&#160;Output:&#160;"/>
+                <Run Text="{x:Bind vm:ExportVideoViewModel.GetPrettyFrameRate(ViewModel.OriginalFrameRate, ViewModel.FrameRateMultiplier), Mode=OneWay}"/>
+            </TextBlock>
+        </Grid>
 
     </Grid>
 </ContentDialog>

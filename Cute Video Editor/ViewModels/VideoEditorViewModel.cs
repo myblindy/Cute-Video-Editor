@@ -15,6 +15,7 @@ using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Helpers;
 using FFmpegInteropX;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -409,6 +410,7 @@ public partial class VideoEditorViewModel : ObservableRecipient
                         var sw = Stopwatch.StartNew();
                         transcoder.Run(new()
                         {
+                            EncoderTitle = $"Cute Video Editor {Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}",
                             FileName = MediaFileName!,
                             CropFrames = CropFrames.Select(w => new FFmpegTranscodeInputCropFrameEntry(
                                 w.FrameNumber, new(w.Rect.CenterX, w.Rect.CenterY, w.Rect.Width, w.Rect.Height))).ToList(),
@@ -523,6 +525,12 @@ public partial class VideoEditorViewModel : ObservableRecipient
                 return true;
             case (VirtualKey.M, true):
                 AddMarker();
+                return true;
+            case (VirtualKey.Home, true):
+                UpdateMediaPosition?.Invoke(TimeSpan.Zero);
+                return true;
+            case (VirtualKey.End, true):
+                UpdateMediaPosition?.Invoke(OutputMediaDuration);
                 return true;
         }
 
