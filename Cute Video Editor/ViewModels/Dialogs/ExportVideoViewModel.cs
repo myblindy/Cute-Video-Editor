@@ -25,6 +25,9 @@ public partial class ExportVideoViewModel : ObservableObject
     [ObservableProperty]
     double pixelSizeMultiplier = 1;
 
+    [ObservableProperty]
+    double originalFrameRate;
+
     public bool IsValid => !string.IsNullOrWhiteSpace(FileName);
 
     public ExportVideoViewModel()
@@ -47,4 +50,7 @@ public partial class ExportVideoViewModel : ObservableObject
     public FFmpegTranscodeOutput BuildTranscodeOutputProperties(VideoEditorViewModel mainViewModel) => new(
         FileName, Type, Crf, FrameRateMultiplier, (mainViewModel.LargestOutputPixelSize * PixelSizeMultiplier).ToWFSize(),
         OutputPresetType.Medium);
+
+    public static string GetPrettyFrameRate(double frameRate, double multiplier = 1) =>
+        (frameRate * multiplier).ToString("0.##\x00A0FPS");
 }

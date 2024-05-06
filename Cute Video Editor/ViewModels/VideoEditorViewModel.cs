@@ -15,6 +15,7 @@ using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Helpers;
 using FFmpegInteropX;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -409,6 +410,7 @@ public partial class VideoEditorViewModel : ObservableRecipient
                         var sw = Stopwatch.StartNew();
                         transcoder.Run(new()
                         {
+                            EncoderTitle = $"Cute Video Editor {Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}",
                             FileName = MediaFileName!,
                             CropFrames = CropFrames.Select(w => new FFmpegTranscodeInputCropFrameEntry(
                                 w.FrameNumber, new(w.Rect.CenterX, w.Rect.CenterY, w.Rect.Width, w.Rect.Height))).ToList(),
@@ -508,21 +510,46 @@ public partial class VideoEditorViewModel : ObservableRecipient
             UpdateMediaPosition?.Invoke(GetPositionFromFrameNumber(nextNonTrimmedInputFrameNumber));
     }
 
-    internal bool ProcessKey(VirtualKey key, bool up)
+    void CropFrameStep(bool forward)
     {
-        switch ((key, up))
+        var outputFrameNumber = CurrentOutputFrameNumber;
+        var nextCropMarkerFrameNumber = forward
+            ? CropFrames.FirstOrDefault(w => w.FrameNumber > outputFrameNumber).FrameNumber
+            : CropFrames.LastOrDefault(w => w.FrameNumber < outputFrameNumber).FrameNumber;
+        if (forward && nextCropMarkerFrameNumber == 0)
+            nextCropMarkerFrameNumber = GetFrameNumberFromPosition(OutputMediaDuration);
+        UpdateMediaPosition?.Invoke(GetPositionFromFrameNumber(GetInputFrameNumberFromOutputFrameNumber(nextCropMarkerFrameNumber)));
+    }
+
+    internal bool ProcessKey(VirtualKey key, bool ctrl, bool up)
+    {
+        switch ((key, ctrl, up))
         {
-            case (VirtualKey.Space, true):
+            case (VirtualKey.Space, false, true):
                 TogglePlayPause();
                 return true;
-            case (VirtualKey.Left, false):
+            case (VirtualKey.Left, false, false):
                 FrameStep(false);
                 return true;
-            case (VirtualKey.Right, false):
+            case (VirtualKey.Right, false, false):
                 FrameStep(true);
                 return true;
-            case (VirtualKey.M, true):
+            case (VirtualKey.M, false, true):
                 AddMarker();
+                return true;
+            case (VirtualKey.Home, false, true):
+                UpdateMediaPosition?.Invoke(
+                    GetPositionFromFrameNumber(GetInputFrameNumberFromOutputFrameNumber(0)));
+                return true;
+            case (VirtualKey.End, false, true):
+                UpdateMediaPosition?.Invoke(
+                    GetPositionFromFrameNumber(GetInputFrameNumberFromOutputFrameNumber(GetFrameNumberFromPosition(OutputMediaDuration))));
+                return true;
+            case (VirtualKey.Left, true, false):
+                CropFrameStep(false);
+                return true;
+            case (VirtualKey.Right, true, false):
+                CropFrameStep(true);
                 return true;
         }
 
@@ -547,8 +574,16 @@ public partial class VideoEditorViewModel : ObservableRecipient
         return frameNumber;
     }
 
-    public TimeSpan GetPositionFromFrameNumber(long outputFrameNumber) =>
-        MediaFrameRate is 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(outputFrameNumber / MediaFrameRate);
+    public TimeSpan GetPositionFromFrameNumber(long outputFrameNumber)
+    {
+        if (MediaFrameRate is 0) return TimeSpan.Zero;
+        var newPositionTicks = TimeSpan.FromMilliseconds(Math.Round(outputFrameNumber / MediaFrameRate * 1000)).Ticks;
+        var frameDurationTicks = TimeSpan.FromSeconds(1 / MediaFrameRate).Ticks;
+
+        if (newPositionTicks % frameDurationTicks > frameDurationTicks / 2)
+            newPositionTicks += frameDurationTicks - (newPositionTicks % frameDurationTicks);
+        return TimeSpan.FromTicks(newPositionTicks);
+    }
 
     public long GetFrameNumberFromPosition(TimeSpan position) =>
         (long)(position.TotalSeconds * MediaFrameRate);

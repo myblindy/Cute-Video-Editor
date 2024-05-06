@@ -64,6 +64,7 @@ public class DialogService(IServiceProvider serviceProvider) : IDialogService
         dlg.XamlRoot = App.MainWindow.Content.XamlRoot;
         dlg.ViewModel.FileName = mainViewModel.ProjectFileName;
         dlg.ViewModel.Type = OutputType.Vp9;
+        dlg.ViewModel.OriginalFrameRate = mainViewModel.MediaFrameRate;
 
         return await dlg.ShowAsync() is ContentDialogResult.Primary
             ? dlg.ViewModel.BuildTranscodeOutputProperties(mainViewModel)
