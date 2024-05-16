@@ -58,7 +58,7 @@ public sealed partial class VideoEditorPage : Page
                 ViewModel.MediaPixelSize = new(mediaSource.CurrentVideoStream.PixelWidth, mediaSource.CurrentVideoStream.PixelHeight);
                 ViewModel.MediaDuration = mediaSource.Duration;
                 ViewModel.MediaFrameRate = mediaSource.CurrentVideoStream.FramesPerSecond;
-
+                
                 frameTimer?.Dispose();
                 frameTimer = new(TimeSpan.FromSeconds(1 / ViewModel.MediaFrameRate));
 
