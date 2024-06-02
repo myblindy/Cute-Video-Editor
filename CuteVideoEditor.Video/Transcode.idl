@@ -1,0 +1,91 @@
+namespace CuteVideoEditor_Video
+{
+    runtimeclass TranscodeInputCropRectangle
+    {
+        Int32 CenterX;
+        Int32 CenterY;
+        Int32 Width;
+        Int32 Height;
+
+        TranscodeInputCropRectangle();
+        TranscodeInputCropRectangle(Int32 center_x, Int32 center_y, Int32 width, Int32 height);
+    };
+
+    runtimeclass TranscodeInputCropFrameEntry
+    {
+        TranscodeInputCropRectangle CropRectangle;
+        Int64 FrameNumber;
+
+        TranscodeInputCropFrameEntry();
+        TranscodeInputCropFrameEntry(Int64 frameNumber, TranscodeInputCropRectangle cropRectangle);
+    };
+
+    runtimeclass TranscodeInputTrimmingMarkerEntry
+    {
+        Boolean TrimAfter;
+        Int64 FrameNumber;
+
+        TranscodeInputTrimmingMarkerEntry();
+        TranscodeInputTrimmingMarkerEntry(Int64 frameNumber, Boolean trimAfter);
+    };
+
+    runtimeclass TranscodeInput
+    {
+        String FileName;
+        Int32 VideoStreamIndex;
+        IVectorView<TranscodeInputCropFrameEntry> CropFrames;
+        IVectorView<TranscodeInputTrimmingMarkerEntry> TrimmingMarkers;
+
+        String EncoderTitle;
+
+        TranscodeInput();
+        TranscodeInput(String fileName, Int32 videoStreamIndex,
+            IVectorView<TranscodeInputCropFrameEntry> cropFrames,
+            IVectorView<TranscodeInputTrimmingMarkerEntry> trimmingMarkers,
+            String encoderTitle);
+    };
+
+    enum OutputType
+    {
+        Mp4,
+        Vp8,
+        Vp9,
+    };
+
+    enum OutputPresetType
+    {
+        UltraFast,
+        SuperFast,
+        VeryFast,
+        Faster,
+        Fast,
+        Medium,
+        Slow,
+        Slower,
+        VerySlow,
+        Placebo
+    };
+
+    [bindable]
+    runtimeclass TranscodeOutput
+    {
+        String FileName{get;};
+        OutputType Type{get;};
+        Windows.Foundation.Size PixelSize{get;};
+        UInt32 CRF{get;};
+        OutputPresetType Preset{get;};
+        Double FrameRateMultiplier{get;};
+
+        TranscodeOutput(String FileName, OutputType Type, UInt32 CRF, Double FrameRateMultiplier,
+            Windows.Foundation.Size PixelSize, OutputPresetType Preset);
+    };
+
+    [default_interface]
+    runtimeclass Transcode : Windows.Foundation.IClosable
+    {
+        Transcode();
+        void Run(TranscodeInput input, TranscodeOutput output);
+        event Windows.Foundation.EventHandler<UInt64> FrameOutputProgress;
+    };
+
+}

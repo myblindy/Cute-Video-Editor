@@ -1,0 +1,20 @@
+import "Transcode.idl";
+
+namespace CuteVideoEditor_Video
+{
+    runtimeclass ImageReader: Windows.Foundation.IClosable
+    {
+        ImageReader(String fileName);
+
+        void SetTrimmingMarkers(IVectorView<TranscodeInputTrimmingMarkerEntry> trimmingMarkers);
+        Boolean AdvanceFrame();
+
+        String FileName { get; };
+        Int32 VideoStreamIndex { get; };
+        Windows.Foundation.TimeSpan MediaDuration { get; };
+        Double FrameRate { get; };
+        Windows.Foundation.TimeSpan Position { get; set; };
+        Windows.Foundation.TimeSpan FrameDuration { get; };
+        Windows.Graphics.Imaging.SoftwareBitmap CurrentFrameBitmap{ get; };
+    } 
+}
