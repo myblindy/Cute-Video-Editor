@@ -9,16 +9,12 @@ using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.ViewModels.Dialogs;
 using CuteVideoEditor.Views;
 using CuteVideoEditor.Views.Dialogs;
-using CuteVideoEditor_Video;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using System.Diagnostics;
-using Windows.Graphics.Imaging;
-using Windows.Storage.Streams;
 
 namespace CuteVideoEditor;
 

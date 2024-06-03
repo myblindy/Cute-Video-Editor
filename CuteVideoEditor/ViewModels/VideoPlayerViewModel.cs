@@ -2,7 +2,6 @@
 using CuteVideoEditor.Core.Contracts.ViewModels;
 using CuteVideoEditor.Core.Models;
 using CuteVideoEditor_Video;
-using ReactiveUI;
 using System.Collections.ObjectModel;
 using Windows.Graphics.Imaging;
 

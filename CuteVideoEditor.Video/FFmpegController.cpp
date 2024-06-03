@@ -441,7 +441,7 @@ void FFmpegController::ConvertFrame(AVFrame* srcFrame, AVFrame* dstFrame)
 	AutoReleasePtr<SwsContext, sws_freeContext> swsContext = sws_getContext(
 		srcFrame->width, srcFrame->height, (AVPixelFormat)srcFrame->format,
 		dstFrame->width, dstFrame->height, (AVPixelFormat)dstFrame->format,
-		SWS_FAST_BILINEAR | SWS_FULL_CHR_H_INT | SWS_ACCURATE_RND, nullptr, nullptr, nullptr);
+		/*SWS_FAST_BILINEAR | SWS_FULL_CHR_H_INT | SWS_ACCURATE_RND*/ SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
 	check_av_pointer(swsContext);
 
 	check_av_result(sws_scale(&*swsContext, srcFrame->data, srcFrame->linesize, 0, srcFrame->height, dstFrame->data, dstFrame->linesize));

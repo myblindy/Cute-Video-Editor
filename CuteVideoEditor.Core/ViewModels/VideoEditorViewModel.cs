@@ -42,8 +42,6 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
 
     public IVideoPlayerViewModel VideoPlayerViewModel { get; }
 
-    public event Action<TimeSpan>? UpdateMediaPosition;
-
     public ThicknessModel VideoOverlayMargins { get; private set; }
     public double VideoOverlayScale { get; private set; }
 
