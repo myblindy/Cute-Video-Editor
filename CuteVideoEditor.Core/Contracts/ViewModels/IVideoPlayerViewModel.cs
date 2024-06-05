@@ -25,6 +25,8 @@ public interface IVideoPlayerViewModel : INotifyPropertyChanging, INotifyPropert
     TimeSpan GetPositionFromFrameNumber(long outputFrameNumber);
 
     void TriggerFrameReady();
+
+    event EventHandler<SizeModel> NewFrameGeometry;
 }
 
 public enum MediaPlayerState

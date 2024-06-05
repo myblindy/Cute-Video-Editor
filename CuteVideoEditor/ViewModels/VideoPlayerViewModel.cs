@@ -34,6 +34,7 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
     public ObservableCollection<TrimmingMarkerModel> TrimmingMarkers { get; } = [new(0)];
 
     public event EventHandler<SoftwareBitmap?>? FrameReady;
+    public event EventHandler<SizeModel>? NewFrameGeometry;
 
     public long InputFrameNumber
     {
@@ -54,13 +55,13 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
         get => GetOutputFrameNumberFromInputFrameNumber(InputFrameNumber);
         set => InputFrameNumber = GetInputFrameNumberFromOutputFrameNumber(value);
     }
-    
+
     public TimeSpan OutputMediaPosition
     {
         get => GetPositionFromFrameNumber(OutputFrameNumber);
         set => OutputFrameNumber = GetFrameNumberFromPosition(value);
     }
-    
+
     public TimeSpan OutputMediaDuration =>
         GetPositionFromFrameNumber(GetOutputFrameNumberFromInputFrameNumber((long)(InputMediaDuration.TotalSeconds * MediaFrameRate)));
 
@@ -164,7 +165,10 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
     public void TriggerFrameReady()
     {
         if (imageReader is not null)
+        {
             FrameReady?.Invoke(this, imageReader.CurrentFrameBitmap);
+            NewFrameGeometry?.Invoke(this, new(imageReader.CurrentFrameBitmap.PixelWidth, imageReader.CurrentFrameBitmap.PixelHeight));
+        }
     }
 
     partial void OnMediaFileNameChanged(string? value)
@@ -184,6 +188,34 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
         MediaPlayerState = MediaPlayerState.Stopped;
 
         TriggerFrameReady();
+    }
+
+    CancellationTokenSource? playbackCancellationTokenSource;
+    partial void OnMediaPlayerStateChanged(MediaPlayerState value)
+    {
+        if (value is MediaPlayerState.Playing)
+        {
+            async Task playbackAsync(CancellationToken ct)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                var timer = new PeriodicTimer(TimeSpan.FromSeconds(1.0 / MediaFrameRate));
+                while (true)
+                {
+                    await timer.WaitForNextTickAsync(ct);
+                    ++OutputFrameNumber;
+                }
+            }
+            _ = playbackAsync((playbackCancellationTokenSource ??= new()).Token);
+        }
+        else
+        {
+            playbackCancellationTokenSource?.Cancel();
+            playbackCancellationTokenSource = new();
+
+            if (value is MediaPlayerState.Stopped)
+                OutputMediaPosition = TimeSpan.Zero;
+        }
     }
 
     partial void OnInputMediaPositionChanged(TimeSpan value)

@@ -266,7 +266,7 @@ TranscodeInputCropRectangle FFmpegController::GetCurrentCropRectangle()
 	return { (int)center_x, (int)center_y, (int)width, (int)height };
 }
 
-cppcoro::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
+asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 {
 	int ret;
 
@@ -476,7 +476,11 @@ bool FFmpegController::Seek(TimeSpan position)
 	AutoReleasePtr<AVFrame, av_frame_free> frame = av_frame_alloc();
 	while (true)
 	{
-		check_av_result(av_read_frame(&*inputFormatContext, &*packet));
+		ret = av_read_frame(&*inputFormatContext, &*packet);
+		if (ret == AVERROR_EOF)
+			return false;
+		check_av_result(ret);
+
 		if (packet->stream_index == inputVideoStream->index)
 		{
 			check_av_result(avcodec_send_packet(&*inputCodecContext, &*packet));

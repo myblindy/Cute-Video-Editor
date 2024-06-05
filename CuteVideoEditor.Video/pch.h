@@ -63,7 +63,7 @@ extern "C"
 
 #include "StringUtils.h"
 #include "autoreleaseptr.h"
-#include "cppcoro/generator.hpp"
+#include <asyncpp/generator.h>
 
 // Disable debug string output on non-debug build
 #if !_DEBUG

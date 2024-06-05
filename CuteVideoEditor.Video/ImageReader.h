@@ -29,8 +29,8 @@ namespace winrt::CuteVideoEditor_Video::implementation
 		bool ReadCurrentFrame(bool initialize);
 
 		std::unique_ptr<FFmpegController> ffmpegController;
-		cppcoro::generator<AVFrame*> ffmpegFrameGenerator;
-		cppcoro::generator<AVFrame*>::iterator ffmpegFrameIterator;
+		asyncpp::generator<AVFrame*> ffmpegFrameGenerator;
+		asyncpp::generator<AVFrame*>::iterator ffmpegFrameIterator;
 		Windows::Graphics::Imaging::SoftwareBitmap currentFrameBitmap{ nullptr };
 
 		hstring fileName;

@@ -318,6 +318,9 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
         VideoPlayerViewModel.TrimmingMarkers.ActOnEveryObject((s, e) => RebuildTrimmingMarkers());
         this.WhenAnyValue(x => x.VideoPlayerViewModel.InputMediaDuration, x => x.VideoPlayerViewModel.MediaFrameRate)
             .Subscribe(_ => RebuildTrimmingMarkers());
+
+        // media size
+        VideoPlayerViewModel.NewFrameGeometry += (s, e) => MediaPixelSize = e;
     }
 
     public void LoadProjectFile(string projectFileName)

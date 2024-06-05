@@ -61,7 +61,6 @@ namespace winrt::CuteVideoEditor_Video::implementation
 		memcpy(buffer, rgbaFrame->data[0], rgbaFrame->linesize[0] * rgbaFrame->height);
 
 		ffmpegController->ReleaseTemporaryFrame(rgbaFrame);
-
 		frameDuration = ffmpegController->GetFrameDuration(*ffmpegFrameIterator);
 
 		++ffmpegFrameIterator;
@@ -82,7 +81,7 @@ namespace winrt::CuteVideoEditor_Video::implementation
 	{
 		// only start a seek if we're going backwards, or far enough forward
 		if (value == position) return;
-		if (value - position <= chrono::seconds(1))
+		if (value >= position && value - position <= chrono::seconds(1))
 		{
 			while (position < value)
 				if (!AdvanceFrame())

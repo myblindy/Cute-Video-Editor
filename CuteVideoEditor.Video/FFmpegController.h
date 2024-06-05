@@ -58,7 +58,7 @@ public:
 	void OpenInputVideo(const char* filenameUtf8, bool dumpFormat, FFmpegControllerThreadedType& threadType);
 	winrt::Windows::Foundation::TimeSpan GetMediaDuration() const { return mediaDuration; }
 	void SetValidTrimmingRanges(const std::vector<winrt::CuteVideoEditor_Video::TranscodeInputTrimmingMarkerEntry>& trimmingMarkers);
-	cppcoro::generator<AVFrame*> EnumerateInputFrames();
+	asyncpp::generator<AVFrame*> EnumerateInputFrames();
 	bool Seek(winrt::Windows::Foundation::TimeSpan position);
 
 	void OpenOutputVideo(const char* filenameUtf8, winrt::CuteVideoEditor_Video::OutputType outputType, uint32_t crf,
