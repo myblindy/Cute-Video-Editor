@@ -63,8 +63,6 @@ namespace winrt::CuteVideoEditor_Video::implementation
 		ffmpegController->ReleaseTemporaryFrame(rgbaFrame);
 		frameDuration = ffmpegController->GetFrameDuration(*ffmpegFrameIterator);
 
-		++ffmpegFrameIterator;
-
 		return true;
 	}
 
@@ -83,7 +81,7 @@ namespace winrt::CuteVideoEditor_Video::implementation
 		if (value == position) return;
 		if (value >= position && value - position <= chrono::seconds(1))
 		{
-			while (position < value)
+			while (TimeSpanToSeconds(value - position) >= 1.0 / frameRate)
 				if (!AdvanceFrame())
 					break;
 			return;

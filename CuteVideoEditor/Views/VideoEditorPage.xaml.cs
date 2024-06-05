@@ -11,7 +11,7 @@ public sealed partial class VideoEditorPage : Page
     {
         ViewModel = mainViewModel;
         InitializeComponent();
-
+        
         Unloaded += (s, e) => ViewModel.Dispose();
         videoPlayerControl.SizeChanged += (s, e) => ViewModel.VideoPlayerPixelSize = new((int)e.NewSize.Width, (int)e.NewSize.Height);
     }
