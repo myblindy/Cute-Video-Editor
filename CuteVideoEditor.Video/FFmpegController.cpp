@@ -323,7 +323,7 @@ asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 	if (!flushing)
 	{
 		// flush stuff
-		/*check_av_result*/(avcodec_send_packet(&*inputCodecContext, nullptr));
+		avcodec_send_packet(&*inputCodecContext, nullptr);
 		ret = 0;
 		flushing = true;
 		goto process_flushed_frames;
@@ -490,7 +490,6 @@ bool FFmpegController::Seek(TimeSpan position, bool forward)
 	AutoReleasePtr<AVPacket, av_packet_unref> packet = av_packet_alloc();
 	AutoReleasePtr<AVFrame, av_frame_free> frame = av_frame_alloc();
 
-retry:
 	for (; retries > 0 && ret < 0; --retries)
 	{
 		if (ret > INT_MIN)
