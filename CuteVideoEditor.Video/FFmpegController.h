@@ -59,7 +59,7 @@ public:
 	winrt::Windows::Foundation::TimeSpan GetMediaDuration() const { return mediaDuration; }
 	void SetValidTrimmingRanges(const std::vector<winrt::CuteVideoEditor_Video::TranscodeInputTrimmingMarkerEntry>& trimmingMarkers);
 	asyncpp::generator<AVFrame*> EnumerateInputFrames();
-	bool Seek(winrt::Windows::Foundation::TimeSpan position);
+	bool Seek(winrt::Windows::Foundation::TimeSpan position, bool forward);
 
 	void OpenOutputVideo(const char* filenameUtf8, winrt::CuteVideoEditor_Video::OutputType outputType, uint32_t crf,
 		uint32_t width, uint32_t height, const char* encoderTitleUtf8,
@@ -71,6 +71,7 @@ public:
 	void ReleaseTemporaryFrame(AVFrame* frame);
 
 	double GetFrameRate() const { return frameRate; }
+	winrt::Windows::Foundation::TimeSpan GetFramePosition(AVFrame* frame) const;
 	winrt::Windows::Foundation::TimeSpan GetFrameDuration(AVFrame* frame) const;
 
 	~FFmpegController();

@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <format>
+#include <mutex>
 
 // prevent compiler warnings due to name conflicts
 #pragma push_macro("GetCurrentTime")

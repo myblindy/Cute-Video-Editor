@@ -54,6 +54,9 @@ namespace winrt::CuteVideoEditor_Video::implementation
 			currentFrameBitmap = { BitmapPixelFormat::Rgba8, frame->width, frame->height };
 		}
 
+		if (!*ffmpegFrameIterator)
+			return false;
+
 		auto rgbaFrame = ffmpegController->GetRgbaTemporaryFrame(*ffmpegFrameIterator);
 
 		auto pixelBuffer = currentFrameBitmap.LockBuffer(BitmapBufferAccessMode::Write);
@@ -68,10 +71,10 @@ namespace winrt::CuteVideoEditor_Video::implementation
 
 	bool ImageReader::AdvanceFrame()
 	{
-		if (++ffmpegFrameIterator == ffmpegFrameGenerator.end())
+		if (++ffmpegFrameIterator == ffmpegFrameGenerator.end() || *ffmpegFrameIterator == nullptr)
 			return false;
 
-		position += frameDuration;
+		position = ffmpegController->GetFramePosition(*ffmpegFrameIterator);
 		return ReadCurrentFrame(false);
 	}
 
@@ -81,13 +84,14 @@ namespace winrt::CuteVideoEditor_Video::implementation
 		if (value == position) return;
 		if (value >= position && value - position <= chrono::seconds(1))
 		{
-			while (TimeSpanToSeconds(value - position) >= 1.0 / frameRate)
+			while (TimeSpanToSeconds(value - position) >= 0.99 / frameRate)
 				if (!AdvanceFrame())
 					break;
 			return;
 		}
 
-		ffmpegController->Seek(position = value);
+		auto seekForward = value > position;
+		ffmpegController->Seek(position = value, seekForward);
 		InitializeFrameEnumerator();
 		ReadCurrentFrame(false);
 	}

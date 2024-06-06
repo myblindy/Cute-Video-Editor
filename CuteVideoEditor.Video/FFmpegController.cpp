@@ -80,7 +80,7 @@ void FFmpegController::OpenInputVideo(const char* filenameUtf8, bool dumpFormat,
 	check_av_result(avcodec_open2(&*inputCodecContext, inputCodec, nullptr));
 
 	mediaDuration = TimeSpan{ inputFormatContext->duration * 10 };
-	frameRate = av_q2d(inputCodecContext->framerate);
+	frameRate = av_q2d(inputVideoStream->r_frame_rate);
 
 	if (dumpFormat)
 		av_dump_format(&*inputFormatContext, 0, filenameUtf8, 0);
@@ -271,6 +271,7 @@ asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 	int ret;
 
 	AutoReleasePtr<AVFrame, av_frame_free> inputFrame = av_frame_alloc();
+	flushing = false;
 	while (!flushing)
 	{
 		// end?
@@ -322,12 +323,14 @@ asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 	if (!flushing)
 	{
 		// flush stuff
-		check_av_result(avcodec_send_packet(&*inputCodecContext, nullptr));
+		/*check_av_result*/(avcodec_send_packet(&*inputCodecContext, nullptr));
+		ret = 0;
 		flushing = true;
 		goto process_flushed_frames;
 	}
 
-	// yield a flush
+	// yield a flush point to let any consuming filter graph work while all variables are still alive
+	// after this continuation point, everything is dead
 	co_yield nullptr;
 }
 
@@ -454,12 +457,17 @@ AVFrame* FFmpegController::GetRgbaTemporaryFrame(AVFrame* frame)
 	return rgbaFrame;
 }
 
+TimeSpan FFmpegController::GetFramePosition(AVFrame* frame) const
+{
+	return TimeSpanFromSeconds(frame->best_effort_timestamp * av_q2d(inputVideoStream->time_base));
+}
+
 TimeSpan FFmpegController::GetFrameDuration(AVFrame* frame) const
 {
 	return TimeSpanFromSeconds(frame->duration * av_q2d(inputVideoStream->time_base));
 }
 
-bool FFmpegController::Seek(TimeSpan position)
+bool FFmpegController::Seek(TimeSpan position, bool forward)
 {
 	int ret;
 
@@ -468,22 +476,57 @@ bool FFmpegController::Seek(TimeSpan position)
 		* inputVideoStream->time_base.den / inputVideoStream->time_base.num;
 	auto pts = llround(dPts);
 
-	check_av_result(avformat_seek_file(&*inputFormatContext, inputVideoStream->index, INT64_MIN, pts, pts, AVSEEK_FLAG_BACKWARD));
-	avcodec_flush_buffers(&*inputCodecContext);
+	int64_t minPts = 0, maxPts = INT64_MAX;
+	forward = false;
+	if (forward)
+		minPts = pts;
+	else
+		maxPts = pts;
 
-	// fast forward until the expected timestamp
+	ret = INT_MIN;
+	auto seekPts = pts;
+	int retries = 10;
+
 	AutoReleasePtr<AVPacket, av_packet_unref> packet = av_packet_alloc();
 	AutoReleasePtr<AVFrame, av_frame_free> frame = av_frame_alloc();
+
+retry:
+	for (; retries > 0 && ret < 0; --retries)
+	{
+		if (ret > INT_MIN)
+			avio_seek(&*inputFormatContext->pb, 0, SEEK_SET);
+		avcodec_flush_buffers(&*inputCodecContext);
+		//ret = avformat_seek_file(&*inputFormatContext, -1, INT64_MIN, seekPts, INT64_MAX, 0);
+		ret = av_seek_frame(&*inputFormatContext, inputVideoStream->index, seekPts, AVSEEK_FLAG_BACKWARD);
+		avcodec_flush_buffers(&*inputCodecContext);
+
+		// set up a potential retry at an earlier point
+		seekPts -= 2 * inputVideoStream->time_base.den / inputVideoStream->time_base.num;
+		if (forward)
+			minPts = seekPts;
+		else
+			maxPts = seekPts;
+	}
+
+	if (retries == 0)
+		return false;
+
+	if (position.count() == 0)
+		return true;
+
+	// fast forward until the expected timestamp
+	flushing = false;
 	while (true)
 	{
 		ret = av_read_frame(&*inputFormatContext, &*packet);
 		if (ret == AVERROR_EOF)
-			return false;
-		check_av_result(ret);
+			flushing = true;
+		else
+			check_av_result(ret);
 
 		if (packet->stream_index == inputVideoStream->index)
 		{
-			check_av_result(avcodec_send_packet(&*inputCodecContext, &*packet));
+			check_av_result(avcodec_send_packet(&*inputCodecContext, flushing ? nullptr : &*packet));
 			while (true)
 			{
 				ret = avcodec_receive_frame(&*inputCodecContext, &*frame);
@@ -500,6 +543,10 @@ bool FFmpegController::Seek(TimeSpan position)
 					return true;
 				}
 			}
+
+			// if we get here in flushing mode, we've failed to find the frame
+			if (flushing)
+				return false;
 		}
 	}
 

@@ -17,7 +17,7 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
         nameof(InputMediaPosition), nameof(InputMediaDuration), nameof(InputFrameNumber),
         nameof(OutputMediaPosition), nameof(OutputMediaDuration), nameof(OutputFrameNumber))]
     string? mediaFileName;
-
+    
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MediaFrameRate),
         nameof(InputMediaDuration), nameof(InputFrameNumber),
@@ -46,7 +46,7 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
         set
         {
             if (MediaFrameRate is 0) throw new InvalidOperationException();
-            InputMediaPosition = TimeSpan.FromSeconds(value / MediaFrameRate);
+            InputMediaPosition = GetPositionFromFrameNumber(Math.Min(value, GetFrameNumberFromPosition(InputMediaDuration) - 1));
         }
     }
 
@@ -199,12 +199,13 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
             {
                 ct.ThrowIfCancellationRequested();
 
-                var timer = new PeriodicTimer(TimeSpan.FromSeconds(1.0 / MediaFrameRate));
-                while (true)
+                using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1.0 / MediaFrameRate));
+                while (OutputFrameNumber < GetFrameNumberFromPosition(OutputMediaDuration) - 2)
                 {
                     await timer.WaitForNextTickAsync(ct);
                     ++OutputFrameNumber;
                 }
+                MediaPlayerState = MediaPlayerState.Paused;
             }
             _ = playbackAsync((playbackCancellationTokenSource ??= new()).Token);
         }

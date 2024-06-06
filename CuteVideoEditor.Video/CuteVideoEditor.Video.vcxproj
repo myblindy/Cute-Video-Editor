@@ -129,6 +129,10 @@
   <ItemGroup>
     <ClInclude Include="AutoReleasePtr.h" />
     <ClInclude Include="FFmpegController.h" />
+    <ClInclude Include="FFmpegLogging.h">
+      <DependentUpon>FFmpegLogging.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="ImageReader.h">
       <DependentUpon>ImageReader.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -142,6 +146,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FFmpegController.cpp" />
+    <ClCompile Include="FFmpegLogging.cpp">
+      <DependentUpon>FFmpegLogging.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="ImageReader.cpp">
       <DependentUpon>ImageReader.idl</DependentUpon>
       <SubType>Code</SubType>
@@ -156,6 +164,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="FFmpegLogging.idl">
+      <SubType>Designer</SubType>
+    </Midl>
     <Midl Include="ImageReader.idl">
       <SubType>Designer</SubType>
     </Midl>

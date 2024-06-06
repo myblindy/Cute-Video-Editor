@@ -9,6 +9,7 @@ using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.ViewModels.Dialogs;
 using CuteVideoEditor.Views;
 using CuteVideoEditor.Views.Dialogs;
+using CuteVideoEditor_Video;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -66,7 +67,7 @@ public partial class App : Application
                 services.AddSingleton<IPageService, PageService>();
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<IDialogService, DialogService>();
-                //services.AddSingleton<FFmpegLogProvider>();
+                services.AddSingleton<IFFmpegLogProvider, FFmpegLogProvider>();
                 services.AddSingleton<IVideoTranscoderService, VideoTranscoderService>();
 
                 // Views and ViewModels
@@ -89,8 +90,8 @@ public partial class App : Application
 
         UnhandledException += App_UnhandledException;
 
-        //FFmpegInteropLogging.SetLogLevel(FFmpegInteropX.LogLevel.Trace);
-        //FFmpegInteropLogging.SetLogProvider(GetService<FFmpegLogProvider>());
+        FFmpegLogging.LogLevel = CuteVideoEditor_Video.LogLevel.Trace;
+        FFmpegLogging.LogProvider = GetService<FFmpegLogProvider>();
 
         //var vm = GetService<VideoEditorViewModel>();
         //vm.LoadProjectFile(@"D:\premiere\mina swagger.cve");
@@ -109,16 +110,16 @@ public partial class App : Application
         //    using var ir = new ImageReader(@"d:\vids\sexy\100801 Miss A - Bad girl Good girl min suzy boobs bra skirts.mp4");
         //    var timeSpan = TimeSpan.FromSeconds(5307 / ir.FrameRate);
         //    ir.Position = timeSpan;
-            
+
         //    using (var stream = File.Create(@"d:\temp\a.jpg"))
         //    {
         //        using var wrtStream = stream.AsRandomAccessStream();
         //        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, wrtStream);
-                
+
         //        encoder.SetSoftwareBitmap(ir.CurrentFrameBitmap);
         //        await encoder.FlushAsync();
         //    }
-            
+
         //    Process.Start(new ProcessStartInfo("d:\\temp\\a.jpg") { UseShellExecute = true });
         //}
         //_ = t();
@@ -136,15 +137,15 @@ public partial class App : Application
     }
 }
 
-//class FFmpegLogProvider(ILogger<FFmpegLogProvider> logger) : ILogProvider
-//{
-//    public void Log(FFmpegInteropX.LogLevel level, string message) =>
-//        logger.Log(level switch
-//        {
-//            FFmpegInteropX.LogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
-//            FFmpegInteropX.LogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
-//            FFmpegInteropX.LogLevel.Info => Microsoft.Extensions.Logging.LogLevel.Information,
-//            FFmpegInteropX.LogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
-//            _ => Microsoft.Extensions.Logging.LogLevel.Trace
-//        }, message);
-//}
+class FFmpegLogProvider(ILogger<FFmpegLogProvider> logger) : IFFmpegLogProvider
+{
+    public void Log(CuteVideoEditor_Video.LogLevel level, string message) =>
+        logger.Log(level switch
+        {
+            CuteVideoEditor_Video.LogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
+            CuteVideoEditor_Video.LogLevel.Warning => Microsoft.Extensions.Logging.LogLevel.Warning,
+            CuteVideoEditor_Video.LogLevel.Info => Microsoft.Extensions.Logging.LogLevel.Information,
+            CuteVideoEditor_Video.LogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
+            _ => Microsoft.Extensions.Logging.LogLevel.Trace
+        }, "{Message}", message);
+}
