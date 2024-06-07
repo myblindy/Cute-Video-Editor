@@ -9,7 +9,7 @@ namespace CuteVideoEditor.ViewModels;
 partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, IDisposable
 {
     private bool disposedValue;
-
+    
     ImageReader? imageReader;
 
     [ObservableProperty]

@@ -303,8 +303,9 @@ asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 					++validTrimmingRangeEntryIndex;
 				}
 				++inputFrameNumber;
+				auto inputPosition = GetDurationFromFrameNumber(inputFrameNumber);
 				if (validTrimmingRangeEntryIndex >= validTrimmingRanges.size()
-					|| GetDurationFromFrameNumber(inputFrameNumber) >= validTrimmingRanges[validTrimmingRangeEntryIndex].second)
+					|| (inputPosition >= validTrimmingRanges[validTrimmingRangeEntryIndex].second) && validTrimmingRangeEntryIndex < validTrimmingRanges.size() - 1)
 				{
 					break;
 				}
@@ -476,13 +477,6 @@ bool FFmpegController::Seek(TimeSpan position, bool forward)
 		* inputVideoStream->time_base.den / inputVideoStream->time_base.num;
 	auto pts = llround(dPts);
 
-	int64_t minPts = 0, maxPts = INT64_MAX;
-	forward = false;
-	if (forward)
-		minPts = pts;
-	else
-		maxPts = pts;
-
 	ret = INT_MIN;
 	auto seekPts = pts;
 	int retries = 10;
@@ -492,8 +486,8 @@ bool FFmpegController::Seek(TimeSpan position, bool forward)
 
 	for (; retries > 0 && ret < 0; --retries)
 	{
-		if (ret > INT_MIN)
-			avio_seek(&*inputFormatContext->pb, 0, SEEK_SET);
+		//if (ret > INT_MIN)
+		//	avio_seek(&*inputFormatContext->pb, 0, SEEK_SET);
 		avcodec_flush_buffers(&*inputCodecContext);
 		//ret = avformat_seek_file(&*inputFormatContext, -1, INT64_MIN, seekPts, INT64_MAX, 0);
 		ret = av_seek_frame(&*inputFormatContext, inputVideoStream->index, seekPts, AVSEEK_FLAG_BACKWARD);
@@ -501,10 +495,6 @@ bool FFmpegController::Seek(TimeSpan position, bool forward)
 
 		// set up a potential retry at an earlier point
 		seekPts -= 2 * inputVideoStream->time_base.den / inputVideoStream->time_base.num;
-		if (forward)
-			minPts = seekPts;
-		else
-			maxPts = seekPts;
 	}
 
 	if (retries == 0)

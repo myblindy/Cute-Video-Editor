@@ -90,8 +90,8 @@ public partial class App : Application
 
         UnhandledException += App_UnhandledException;
 
-        FFmpegLogging.LogLevel = CuteVideoEditor_Video.LogLevel.Trace;
-        FFmpegLogging.LogProvider = GetService<FFmpegLogProvider>();
+        FFmpegLogging.LogLevel = CuteVideoEditor_Video.LogLevel.Warning;
+        FFmpegLogging.LogProvider = GetService<IFFmpegLogProvider>();
 
         //var vm = GetService<VideoEditorViewModel>();
         //vm.LoadProjectFile(@"D:\premiere\mina swagger.cve");
