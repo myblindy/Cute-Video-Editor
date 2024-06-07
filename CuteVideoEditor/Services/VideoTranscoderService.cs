@@ -18,8 +18,11 @@ class VideoTranscoderService(IMapper mapper) : IVideoTranscoderService
     public void Transcode(VideoTranscodeInput input, VideoTranscodeOutput output, Action frameProcessed)
     {
         using var transcoder = new Transcode();
-        transcoder.Run(new(input.FileName, 0, mapper.Map<List<TranscodeInputCropFrameEntry>>(input.CropFrames),
-                mapper.Map<List<TranscodeInputTrimmingMarkerEntry>>(input.TrimmingMarkers), input.EncoderTitle),
+        transcoder.FrameOutputProgress += (s, e) => frameProcessed();
+        transcoder.Run(new(input.FileName, 0,
+                mapper.Map<List<TranscodeInputCropFrameEntry>>(input.CropFrames),
+                mapper.Map<List<TranscodeInputTrimmingMarkerEntry>>(input.TrimmingMarkers),
+                input.EncoderTitle),
             new(output.FileName, ConvertOutputType(output.OutputType), output.Crf, output.FrameRateMultiplier,
                 new(output.PixelWidth, output.PixelHeight), OutputPresetType.Medium));
     }

@@ -325,8 +325,6 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
 
     public void LoadProjectFile(string projectFileName)
     {
-        CropFrames.Clear();
-        VideoPlayerViewModel.TrimmingMarkers.Clear();
 
         using (var inputFile = File.OpenRead(projectFileName))
             try
@@ -336,7 +334,11 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                     FreezeCropSizeMode = model.FreezeCropSizeMode;
                     ProjectFileName = projectFileName;
                     VideoPlayerViewModel.MediaFileName = Path.GetDirectoryName(projectFileName) is { } projectDirectoryName ? Path.Combine(projectDirectoryName, model.MediaFileName) : model.MediaFileName;
+
+                    CropFrames.Clear();
                     CropFrames.AddRange(mapper.Map<List<CropFrameEntryModel>>(model.CropFrames));
+
+                    VideoPlayerViewModel.TrimmingMarkers.Clear();
                     VideoPlayerViewModel.TrimmingMarkers.AddRange(mapper.Map<List<TrimmingMarkerModel>>(model.TrimmingMarkers));
                     return;
                 }
@@ -344,9 +346,13 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
             catch (JsonException) { }
 
         // if we couldn't parse it as a project file, load it as a video file
-        VideoPlayerViewModel.TrimmingMarkers.Add(new(0));
         ProjectFileName = null;
         VideoPlayerViewModel.MediaFileName = projectFileName;
+
+        CropFrames.Clear();
+
+        VideoPlayerViewModel.TrimmingMarkers.Clear();
+        VideoPlayerViewModel.TrimmingMarkers.Add(new(0));
     }
 
     void TogglePlayPause()
