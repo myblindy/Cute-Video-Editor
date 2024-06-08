@@ -9,17 +9,20 @@
     xmlns:numberformatting="using:Windows.Globalization.NumberFormatting"
     xmlns:vm="using:CuteVideoEditor.ViewModels.Dialogs"
     mc:Ignorable="d"
-    Title="Export Video" MinWidth="900" 
+    Title="Export Video"
     CloseButtonText="Cancel"
     PrimaryButtonText="Render" IsPrimaryButtonEnabled="{x:Bind ViewModel.IsValid, Mode=OneWay}">
 
     <ContentDialog.Resources>
         <Style x:Key="LabelStyle" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="12"/>
         </Style>
+        <x:Double x:Key="ContentDialogMaxWidth">2000</x:Double>
+        <x:Double x:Key="ContentDialogMaxHeight">2000</x:Double>
     </ContentDialog.Resources>
 
-    <Grid ColumnSpacing="5">
+    <Grid ColumnSpacing="5" MinWidth="700">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>

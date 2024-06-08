@@ -3,6 +3,7 @@ using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Contracts.Services;
 using CuteVideoEditor.Core.Contracts.ViewModels;
 using CuteVideoEditor.Core.Models;
+using CuteVideoEditor.Core.Services;
 using CuteVideoEditor.Helpers;
 using CuteVideoEditor.Services;
 using CuteVideoEditor.ViewModels;
@@ -73,6 +74,7 @@ public partial class App : Application
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IFFmpegLogProvider, FFmpegLogProvider>();
                 services.AddSingleton<IVideoTranscoderService, VideoTranscoderService>();
+                services.AddSingleton<SettingsService>();
 
                 // Views and ViewModels
                 services.AddScoped<VideoEditorViewModel>();

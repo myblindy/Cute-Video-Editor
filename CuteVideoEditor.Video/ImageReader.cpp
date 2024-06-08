@@ -13,7 +13,6 @@ namespace winrt::CuteVideoEditor_Video::implementation
 	ImageReader::ImageReader(hstring const& fileName)
 		: ffmpegController(make_unique<FFmpegController>())
 	{
-		FFmpegControllerThreadedType threadType{};
 		ffmpegController->OpenInputVideo(StringUtils::PlatformStringToUtf8String(fileName).c_str(), false);
 		frameRate = ffmpegController->GetFrameRate();
 		mediaDuration = ffmpegController->GetMediaDuration();

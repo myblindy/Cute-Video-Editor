@@ -271,8 +271,23 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                 });
             });
 
+            // try to get information about the output file
+            string? prettyOutputFileSize = null;
+            try
+            {
+                var outputFileSize = new FileInfo(outputParameters.FileName).Length;
+                prettyOutputFileSize = outputFileSize switch
+                {
+                    < 1024 => $"{outputFileSize} B",
+                    < 1024 * 1024 => $"{outputFileSize / 1024.0:0.##} KB",
+                    < 1024 * 1024 * 1024 => $"{outputFileSize / 1024.0 / 1024.0:0.##} MB",
+                    _ => $"{outputFileSize / 1024.0 / 1024.0 / 1024.0:0.##} GB"
+                };
+            }
+            catch { }
+
             await dialogService.ShowInformationMessageDialog("Encoding finished",
-                encodingResult ? $"Encoding finished in {duration}." : "Encoding failed.");
+                encodingResult ? $"Encoding finished in {duration} with a {prettyOutputFileSize} output file." : "Encoding failed.");
         }
     }
 
@@ -323,7 +338,7 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
 
         // media size
         VideoPlayerViewModel.NewFrameGeometry += (s, e) => MediaPixelSize = e;
-        
+
         // media state buttons
         VideoPlayerViewModel.WhenAnyValue(x => x.MediaPlayerState).Subscribe(_ =>
         {
@@ -331,7 +346,7 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
             PauseCommand.NotifyCanExecuteChanged();
         });
     }
-    
+
     public void LoadProjectFile(string projectFileName)
     {
         void addDefaultCropFrames() =>

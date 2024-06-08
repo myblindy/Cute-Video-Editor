@@ -68,16 +68,4 @@
   <Target Name="PostBuild-CVE-Video" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;..\$(Platform)\$(Configuration)\CuteVideoEditor.Video\*&quot; &quot;$(OutDir)&quot; /d /q /s /i /r /m /y" />
   </Target>
-
-  <ItemGroup>
-    <CustomAdditionalCompileInputs Remove="Views\Controls\VideoPlayerControl.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Views\Controls\VideoPlayerControl.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Remove="Views\Controls\VideoPlayerControl.xaml" />
-  </ItemGroup>
 </Project>
