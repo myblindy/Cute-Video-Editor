@@ -3,3 +3,4 @@ UnhookWindowsHookEx
 CallNextHookEx
 GetCurrentThreadId
 GetAsyncKeyState
+GetModuleFileName

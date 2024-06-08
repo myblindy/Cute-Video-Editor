@@ -19,7 +19,7 @@ public class RectSerializationModel
 public class CropFrameEntrySerializationModel
 {
     public int FrameNumber { get; set; }
-    public RectSerializationModel? Rect { get; set; }
+    public RectSerializationModel? CropRectangle { get; set; }
 }
 
 public class SerializationModel

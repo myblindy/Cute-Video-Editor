@@ -16,6 +16,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
+using System.Reflection;
+using Windows.Win32;
 
 namespace CuteVideoEditor;
 
@@ -40,6 +43,7 @@ public partial class App : Application
 
     public App()
     {
+        UnhandledException += App_UnhandledException;
         InitializeComponent();
 
         RequestedTheme = ApplicationTheme.Dark;
@@ -88,41 +92,22 @@ public partial class App : Application
                 config.AddConfiguration(context.Configuration.GetSection("Logging")))
             .Build();
 
-        UnhandledException += App_UnhandledException;
 
         FFmpegLogging.LogLevel = CuteVideoEditor_Video.LogLevel.Warning;
         FFmpegLogging.LogProvider = GetService<IFFmpegLogProvider>();
 
-        //var vm = GetService<VideoEditorViewModel>();
-        //vm.LoadProjectFile(@"D:\premiere\mina swagger.cve");
-        //vm.ExportVideoHack(new()
-        //{
-        //    FileName = @"d:\temp\mina swagger.mkv",
-        //    OutputType = VideoOutputType.Vp9,
-        //    PixelWidth = vm.LargestOutputPixelSize.Width,
-        //    PixelHeight = vm.LargestOutputPixelSize.Height,
-        //    Crf = 12,
-        //    FrameRateMultiplier = 1
-        //});
+        RegisterForActivation();
+    }
 
-        //async Task t()
-        //{
-        //    using var ir = new ImageReader(@"d:\vids\sexy\100801 Miss A - Bad girl Good girl min suzy boobs bra skirts.mp4");
-        //    var timeSpan = TimeSpan.FromSeconds(5307 / ir.FrameRate);
-        //    ir.Position = timeSpan;
+    private unsafe static void RegisterForActivation()
+    {
+        // executable path
+        var buffer = stackalloc char[1024];
+        PInvoke.GetModuleFileName(null, buffer, 1024);
+        var executablePath = new string(buffer);
 
-        //    using (var stream = File.Create(@"d:\temp\a.jpg"))
-        //    {
-        //        using var wrtStream = stream.AsRandomAccessStream();
-        //        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, wrtStream);
-
-        //        encoder.SetSoftwareBitmap(ir.CurrentFrameBitmap);
-        //        await encoder.FlushAsync();
-        //    }
-
-        //    Process.Start(new ProcessStartInfo("d:\\temp\\a.jpg") { UseShellExecute = true });
-        //}
-        //_ = t();
+        ActivationRegistrationManager.RegisterForFileTypeActivation([".cve"],
+            $"{executablePath},0", "Cute Video Editor File", ["open"], executablePath);
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

@@ -11,7 +11,7 @@
     mc:Ignorable="d"
     Title="Export Video" MinWidth="900" 
     CloseButtonText="Cancel"
-    PrimaryButtonText="Render" IsPrimaryButtonEnabled="{x:Bind ViewModel.IsValid}">
+    PrimaryButtonText="Render" IsPrimaryButtonEnabled="{x:Bind ViewModel.IsValid, Mode=OneWay}">
 
     <ContentDialog.Resources>
         <Style x:Key="LabelStyle" TargetType="TextBlock">

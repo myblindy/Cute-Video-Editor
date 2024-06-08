@@ -1,5 +1,6 @@
 ﻿using CuteVideoEditor.Contracts.Services;
 using CuteVideoEditor.Core.Models;
+using CuteVideoEditor.Core.Services;
 using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.ViewModels.Dialogs;
 using CuteVideoEditor.Views.Dialogs;
@@ -9,7 +10,7 @@ using Windows.Storage.Pickers;
 
 namespace CuteVideoEditor.Services;
 
-public class DialogService(IServiceProvider serviceProvider) : IDialogService
+public class DialogService(IServiceProvider serviceProvider, SettingsService settingsService) : IDialogService
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Service")]
     public async Task<string?> SelectVideoFileAsync()
@@ -66,9 +67,13 @@ public class DialogService(IServiceProvider serviceProvider) : IDialogService
         dlg.ViewModel.Type = VideoOutputType.Vp9;
         dlg.ViewModel.OriginalFrameRate = mainViewModel.VideoPlayerViewModel.MediaFrameRate;
 
-        return await dlg.ShowAsync() is ContentDialogResult.Primary
-            ? dlg.ViewModel.BuildTranscodeOutputProperties(mainViewModel)
-            : null;
+        if (await dlg.ShowAsync() is not ContentDialogResult.Primary)
+            return null;
+
+        var output = dlg.ViewModel.BuildTranscodeOutputProperties(mainViewModel);
+        settingsService.LastCrf = output.Crf;
+        settingsService.LastVideoOutputType = output.OutputType;
+        return output;
     }
 
     public async Task<bool> ShowOperationProgressDialog(string? description, bool autoClose,

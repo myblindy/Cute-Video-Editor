@@ -28,7 +28,7 @@ void FFmpegController::throw_av_error(int ret)
 	if (ret < 0)
 	{
 		char err[AV_ERROR_MAX_STRING_SIZE];
-		av_make_error_string(err, AV_ERROR_MAX_STRING_SIZE, ret);
+		av_make_error_string(err, sizeof err, ret);
 		av_log(nullptr, AV_LOG_ERROR, "%s\n", err);
 
 		throw_hresult(E_FAIL);
@@ -37,7 +37,7 @@ void FFmpegController::throw_av_error(int ret)
 #define check_av_result(cmd) do { if((ret = cmd) < 0) throw_av_error(ret); } while(0)
 #define check_av_pointer(ptr) do { if(!(ptr)) { av_log(nullptr, AV_LOG_ERROR, "Pointer returned as null.\n"); throw_hresult(E_FAIL); } } while(0)
 
-void FFmpegController::OpenInputVideo(const char* filenameUtf8, bool dumpFormat, FFmpegControllerThreadedType& threadType)
+void FFmpegController::OpenInputVideo(const char* filenameUtf8, bool dumpFormat)
 {
 	int ret;
 
@@ -64,17 +64,17 @@ void FFmpegController::OpenInputVideo(const char* filenameUtf8, bool dumpFormat,
 	if (inputCodec->capabilities & AV_CODEC_CAP_FRAME_THREADS)
 	{
 		inputCodecContext->thread_type = FF_THREAD_FRAME;
-		threadType = FFmpegControllerThreadedType::FrameThreads;
+		inputThreadType = FFmpegControllerThreadedType::FrameThreads;
 	}
 	else if (inputCodec->capabilities & AV_CODEC_CAP_SLICE_THREADS)
 	{
 		inputCodecContext->thread_type = FF_THREAD_SLICE;
-		threadType = FFmpegControllerThreadedType::SlideThreads;
+		inputThreadType = FFmpegControllerThreadedType::SlideThreads;
 	}
 	else
 	{
 		inputCodecContext->thread_count = 1;
-		threadType = FFmpegControllerThreadedType::SingleThread;
+		inputThreadType = FFmpegControllerThreadedType::SingleThread;
 	}
 
 	check_av_result(avcodec_open2(&*inputCodecContext, inputCodec, nullptr));
@@ -272,11 +272,13 @@ asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 
 	AutoReleasePtr<AVFrame, av_frame_free> inputFrame = av_frame_alloc();
 	flushing = false;
+	validTrimmingRangeEntryIndex = 0;
+
 	while (!flushing)
 	{
 		// end?
 		if (validTrimmingRangeEntryIndex >= validTrimmingRanges.size())
-			break;
+			goto end;
 
 		if ((ret = av_read_frame(&*inputFormatContext, &*inputPacket)) < 0)
 			break;
@@ -305,12 +307,16 @@ asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 				++inputFrameNumber;
 				auto inputPosition = GetDurationFromFrameNumber(inputFrameNumber);
 				if (validTrimmingRangeEntryIndex >= validTrimmingRanges.size()
-					|| (inputPosition >= validTrimmingRanges[validTrimmingRangeEntryIndex].second) && validTrimmingRangeEntryIndex < validTrimmingRanges.size() - 1)
+					|| (inputPosition >= validTrimmingRanges[validTrimmingRangeEntryIndex].second) && validTrimmingRangeEntryIndex < validTrimmingRanges.size()/* - 1*/)
 				{
 					break;
 				}
-				else if (GetDurationFromFrameNumber(inputFrameNumber) < validTrimmingRanges[validTrimmingRangeEntryIndex].first)
+				else if (inputPosition < validTrimmingRanges[validTrimmingRangeEntryIndex].first)
+				{
+					// seek
+					Seek(validTrimmingRanges[validTrimmingRangeEntryIndex].first);
 					continue;
+				}
 
 				// yield the frame
 				co_yield &*inputFrame;
@@ -332,6 +338,7 @@ asyncpp::generator<AVFrame*> FFmpegController::EnumerateInputFrames()
 
 	// yield a flush point to let any consuming filter graph work while all variables are still alive
 	// after this continuation point, everything is dead
+end:
 	co_yield nullptr;
 }
 
@@ -388,7 +395,6 @@ void FFmpegController::WriteFilteredFrame(bool flush)
 
 	if (filteredFrame->pts != AV_NOPTS_VALUE)
 	{
-		auto inputFrameNumber = av_rescale_q(filteredFrame->pts, filteredFrame->time_base, outputCodecContext->time_base);
 		auto outputFrameNumber = encodedFrameNumber++;
 
 		filteredFrame->pts = av_rescale_q(outputFrameNumber,
@@ -445,7 +451,7 @@ void FFmpegController::ConvertFrame(AVFrame* srcFrame, AVFrame* dstFrame)
 	AutoReleasePtr<SwsContext, sws_freeContext> swsContext = sws_getContext(
 		srcFrame->width, srcFrame->height, (AVPixelFormat)srcFrame->format,
 		dstFrame->width, dstFrame->height, (AVPixelFormat)dstFrame->format,
-		/*SWS_FAST_BILINEAR | SWS_FULL_CHR_H_INT | SWS_ACCURATE_RND*/ SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
+		SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
 	check_av_pointer(swsContext);
 
 	check_av_result(sws_scale(&*swsContext, srcFrame->data, srcFrame->linesize, 0, srcFrame->height, dstFrame->data, dstFrame->linesize));
@@ -468,7 +474,7 @@ TimeSpan FFmpegController::GetFrameDuration(AVFrame* frame) const
 	return TimeSpanFromSeconds(frame->duration * av_q2d(inputVideoStream->time_base));
 }
 
-bool FFmpegController::Seek(TimeSpan position, bool forward)
+bool FFmpegController::Seek(TimeSpan position)
 {
 	int ret;
 

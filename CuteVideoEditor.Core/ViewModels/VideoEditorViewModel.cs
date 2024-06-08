@@ -81,6 +81,8 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                 if (CropFrames.TakeWhile(w => w.FrameNumber < outputFrameNumber).Count() is { } idx
                     && idx >= 0 && idx < CropFrames.Count)
                 {
+                    if (idx == 0)
+                        return new(CropFrames[0].CropRectangle, CropRectType.Interpolated);
                     return new(RectModel.Interpolate(CropFrames[idx - 1].CropRectangle, CropFrames[idx].CropRectangle,
                         (outputFrameNumber - CropFrames[idx - 1].FrameNumber) / (double)(CropFrames[idx].FrameNumber - CropFrames[idx - 1].FrameNumber)), CropRectType.Interpolated);
                 }
@@ -321,10 +323,19 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
 
         // media size
         VideoPlayerViewModel.NewFrameGeometry += (s, e) => MediaPixelSize = e;
+        
+        // media state buttons
+        VideoPlayerViewModel.WhenAnyValue(x => x.MediaPlayerState).Subscribe(_ =>
+        {
+            PlayCommand.NotifyCanExecuteChanged();
+            PauseCommand.NotifyCanExecuteChanged();
+        });
     }
-
+    
     public void LoadProjectFile(string projectFileName)
     {
+        void addDefaultCropFrames() =>
+            CropFrames.Add(new(0, new(MediaPixelSize.Width / 2, MediaPixelSize.Height / 2, MediaPixelSize.Width / 2, MediaPixelSize.Height / 2)));
 
         using (var inputFile = File.OpenRead(projectFileName))
             try
@@ -338,6 +349,10 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                     CropFrames.Clear();
                     CropFrames.AddRange(mapper.Map<List<CropFrameEntryModel>>(model.CropFrames));
 
+                    // fix empty crop frames
+                    if (CropFrames.Count == 0)
+                        addDefaultCropFrames();
+
                     VideoPlayerViewModel.TrimmingMarkers.Clear();
                     VideoPlayerViewModel.TrimmingMarkers.AddRange(mapper.Map<List<TrimmingMarkerModel>>(model.TrimmingMarkers));
                     return;
@@ -350,6 +365,7 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
         VideoPlayerViewModel.MediaFileName = projectFileName;
 
         CropFrames.Clear();
+        addDefaultCropFrames();
 
         VideoPlayerViewModel.TrimmingMarkers.Clear();
         VideoPlayerViewModel.TrimmingMarkers.Add(new(0));

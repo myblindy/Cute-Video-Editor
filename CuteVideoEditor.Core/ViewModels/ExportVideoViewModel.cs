@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CuteVideoEditor.Core.Models;
+using CuteVideoEditor.Core.Services;
 using ReactiveUI;
 
 namespace CuteVideoEditor.ViewModels.Dialogs;
 
-public partial class ExportVideoViewModel : ObservableObject
+public partial class ExportVideoViewModel(SettingsService settingsService) : ObservableObject
 {
     public VideoOutputType[] OutputFileTypes { get; } = [.. Enum.GetValues<VideoOutputType>()];
 
@@ -13,10 +14,10 @@ public partial class ExportVideoViewModel : ObservableObject
     string? fileName;
 
     [ObservableProperty]
-    VideoOutputType type;
+    VideoOutputType type = settingsService.LastVideoOutputType;
 
     [ObservableProperty]
-    uint crf = 15;
+    uint crf = settingsService.LastCrf;
 
     [ObservableProperty]
     double frameRateMultiplier = 1;
@@ -29,22 +30,20 @@ public partial class ExportVideoViewModel : ObservableObject
 
     public bool IsValid => !string.IsNullOrWhiteSpace(FileName);
 
-    public ExportVideoViewModel()
-    {
-        this.WhenAnyValue(x => x.FileName).WhereNotNull().Subscribe(fn =>
-            Type = Path.GetExtension(fn) switch
-            {
-                ".webm" => VideoOutputType.Vp9,
-                _ => VideoOutputType.Mp4
-            });
-        this.WhenAnyValue(x => x.Type).WhereNotNull().Subscribe(ft =>
-            FileName = FileName is null ? null : ft switch
-            {
-                VideoOutputType.Vp9 or VideoOutputType.Vp8 => Path.ChangeExtension(FileName, ".webm"),
-                VideoOutputType.Mp4 => Path.ChangeExtension(FileName, ".mp4"),
-                _ => throw new NotImplementedException()
-            });
-    }
+    partial void OnFileNameChanged(string? value) =>
+        Type = value is null ? Type : Path.GetExtension(value) switch
+        {
+            ".webm" => VideoOutputType.Vp9,
+            _ => VideoOutputType.Mp4
+        };
+
+    partial void OnTypeChanged(VideoOutputType value) =>
+        FileName = FileName is null ? null : value switch
+        {
+            VideoOutputType.Vp9 or VideoOutputType.Vp8 => Path.ChangeExtension(FileName, ".webm"),
+            VideoOutputType.Mp4 => Path.ChangeExtension(FileName, ".mp4"),
+            _ => throw new NotImplementedException()
+        };
 
     public VideoTranscodeOutput BuildTranscodeOutputProperties(VideoEditorViewModel mainViewModel) => new()
     {

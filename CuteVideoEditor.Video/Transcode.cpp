@@ -20,9 +20,10 @@ namespace winrt::CuteVideoEditor_Video::implementation
 
 	void Transcode::Run(CuteVideoEditor_Video::TranscodeInput const& input, CuteVideoEditor_Video::TranscodeOutput const& output)
 	{
-		FFmpegControllerThreadedType threadType;
-		ffmpegController->OpenInputVideo(StringUtils::PlatformStringToUtf8String(input.FileName()).c_str(),
-			true, threadType);
+		if (!ffmpegController)
+			throw_hresult(RO_E_CLOSED);
+
+		ffmpegController->OpenInputVideo(StringUtils::PlatformStringToUtf8String(input.FileName()).c_str(), true);
 		ffmpegController->SetValidTrimmingRanges(to_vector(input.TrimmingMarkers()));
 
 		ffmpegController->OpenOutputVideo(StringUtils::PlatformStringToUtf8String(output.FileName()).c_str(),
@@ -40,7 +41,7 @@ namespace winrt::CuteVideoEditor_Video::implementation
 
 	void Transcode::Close()
 	{
-		// why?
+		// dispose pattern
 		ffmpegController.reset();
 	}
 }

@@ -14,8 +14,7 @@ namespace winrt::CuteVideoEditor_Video::implementation
 		: ffmpegController(make_unique<FFmpegController>())
 	{
 		FFmpegControllerThreadedType threadType{};
-		ffmpegController->OpenInputVideo(
-			StringUtils::PlatformStringToUtf8String(fileName).c_str(), false, threadType);
+		ffmpegController->OpenInputVideo(StringUtils::PlatformStringToUtf8String(fileName).c_str(), false);
 		frameRate = ffmpegController->GetFrameRate();
 		mediaDuration = ffmpegController->GetMediaDuration();
 
@@ -90,8 +89,7 @@ namespace winrt::CuteVideoEditor_Video::implementation
 			return;
 		}
 
-		auto seekForward = value > position;
-		ffmpegController->Seek(position = value, seekForward);
+		ffmpegController->Seek(position = value);
 		InitializeFrameEnumerator();
 		ReadCurrentFrame(false);
 	}
