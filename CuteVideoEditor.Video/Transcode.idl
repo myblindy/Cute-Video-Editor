@@ -66,7 +66,6 @@ namespace CuteVideoEditor_Video
         Placebo
     };
 
-    [bindable]
     runtimeclass TranscodeOutput
     {
         String FileName{get;};
@@ -80,12 +79,18 @@ namespace CuteVideoEditor_Video
             Windows.Foundation.Size PixelSize, OutputPresetType Preset);
     };
 
-    [default_interface]
+    runtimeclass TranscodeFrameOutputProgressEventArgs
+    {
+        TranscodeFrameOutputProgressEventArgs(UInt64 frameNumber, Windows.Graphics.Imaging.SoftwareBitmap frameBitmap);
+        UInt64 FrameNumber{get;};
+        Windows.Graphics.Imaging.SoftwareBitmap FrameBitmap{get;};
+    };
+
     runtimeclass Transcode : Windows.Foundation.IClosable
     {
         Transcode();
         void Run(TranscodeInput input, TranscodeOutput output);
-        event Windows.Foundation.EventHandler<UInt64> FrameOutputProgress;
+        event Windows.Foundation.EventHandler<TranscodeFrameOutputProgressEventArgs> FrameOutputProgress;
     };
 
 }

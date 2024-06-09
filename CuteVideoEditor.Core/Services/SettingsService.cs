@@ -1,4 +1,5 @@
 ﻿using CuteVideoEditor.Core.Models;
+using CuteVideoEditor_Video;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
@@ -9,7 +10,7 @@ public class SettingsService
     class SettingsJsonModel
     {
         public uint LastCrf { get; set; } = 12;
-        public VideoOutputType LastVideoOutputType { get; set; } = VideoOutputType.Vp9;
+        public OutputType LastVideoOutputType { get; set; } = OutputType.Vp9;
     }
     SettingsJsonModel model;
 
@@ -58,7 +59,7 @@ public class SettingsService
         set { model.LastCrf = value; SaveSettings(); }
     }
 
-    public VideoOutputType LastVideoOutputType
+    public OutputType LastVideoOutputType
     {
         get => model.LastVideoOutputType;
         set { model.LastVideoOutputType = value; SaveSettings(); }

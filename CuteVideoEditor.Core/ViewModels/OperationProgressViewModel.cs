@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Windows.Graphics.Imaging;
 
 namespace CuteVideoEditor.ViewModels.Dialogs;
 public partial class OperationProgressViewModel : ObservableObject
@@ -11,4 +12,7 @@ public partial class OperationProgressViewModel : ObservableObject
 
     [ObservableProperty]
     bool result;
+
+    [ObservableProperty]
+    SoftwareBitmap? previewFrame;
 }

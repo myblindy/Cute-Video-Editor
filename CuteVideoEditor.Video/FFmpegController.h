@@ -69,7 +69,7 @@ public:
 
 	void EncodeFrame(AVFrame* frame);
 
-	AVFrame* GetRgbaTemporaryFrame(AVFrame* frame);
+	AVFrame* GetRgbaTemporaryFrame(AVFrame* frame, int maxWidth = 0, int maxHeight = 0);
 	void ReleaseTemporaryFrame(AVFrame* frame);
 
 	double GetFrameRate() const { return frameRate; }

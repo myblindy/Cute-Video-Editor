@@ -7,9 +7,12 @@
 #include "TranscodeInputCropRectangle.g.cpp"
 #include "TranscodeInputTrimmingMarkerEntry.g.cpp"
 #include "TranscodeOutput.g.cpp"
+#include "TranscodeFrameOutputProgressEventArgs.g.cpp"
 #include "Transcode.g.cpp"
 
 using namespace std;
+using namespace winrt;
+using namespace Windows::Graphics::Imaging;
 
 namespace winrt::CuteVideoEditor_Video::implementation
 {
@@ -32,10 +35,23 @@ namespace winrt::CuteVideoEditor_Video::implementation
 			to_vector(input.CropFrames()), true);
 
 		uint64_t encodedFrameIndex = 0;
+		const uint64_t frameOutputProgressInterval = 60;
 		for (auto frame : ffmpegController->EnumerateInputFrames())
 		{
+			if (encodedFrameIndex++ % frameOutputProgressInterval == 0)
+			{
+				auto frameBitmap = ffmpegController->GetRgbaTemporaryFrame(frame, 600, 600);
+
+				SoftwareBitmap softwareFrameBitmap{ BitmapPixelFormat::Bgra8, frameBitmap->width, frameBitmap->height };
+				auto softwareBitmapBuffer = softwareFrameBitmap.LockBuffer(BitmapBufferAccessMode::Write);
+				auto softwareBitmapBufferData = softwareBitmapBuffer.CreateReference().data();
+				memcpy(softwareBitmapBufferData, frameBitmap->data[0], frameBitmap->linesize[0] * frameBitmap->height);
+
+				ffmpegController->ReleaseTemporaryFrame(frameBitmap);
+				frameOutputProgress(*this, make<TranscodeFrameOutputProgressEventArgs>(encodedFrameIndex, softwareFrameBitmap));
+			}
+
 			ffmpegController->EncodeFrame(frame);
-			frameOutputProgress(*this, encodedFrameIndex++);
 		}
 	}
 

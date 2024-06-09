@@ -2,19 +2,20 @@
 using CuteVideoEditor.Core.Models;
 using CuteVideoEditor.Core.Services;
 using ReactiveUI;
+using CuteVideoEditor_Video;
 
 namespace CuteVideoEditor.ViewModels.Dialogs;
 
 public partial class ExportVideoViewModel(SettingsService settingsService) : ObservableObject
 {
-    public VideoOutputType[] OutputFileTypes { get; } = [.. Enum.GetValues<VideoOutputType>()];
+    public OutputType[] OutputFileTypes { get; } = [.. Enum.GetValues<OutputType>()];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsValid))]
     string? fileName;
 
     [ObservableProperty]
-    VideoOutputType type = settingsService.LastVideoOutputType;
+    OutputType type = settingsService.LastVideoOutputType;
 
     [ObservableProperty]
     uint crf = settingsService.LastCrf;
@@ -33,15 +34,15 @@ public partial class ExportVideoViewModel(SettingsService settingsService) : Obs
     partial void OnFileNameChanged(string? value) =>
         Type = value is null ? Type : Path.GetExtension(value) switch
         {
-            ".webm" => VideoOutputType.Vp9,
-            _ => VideoOutputType.Mp4
+            ".webm" => OutputType.Vp9,
+            _ => OutputType.Mp4
         };
 
-    partial void OnTypeChanged(VideoOutputType value) =>
+    partial void OnTypeChanged(OutputType value) =>
         FileName = FileName is null ? null : value switch
         {
-            VideoOutputType.Vp9 or VideoOutputType.Vp8 => Path.ChangeExtension(FileName, ".webm"),
-            VideoOutputType.Mp4 => Path.ChangeExtension(FileName, ".mp4"),
+            OutputType.Vp9 or OutputType.Vp8 => Path.ChangeExtension(FileName, ".webm"),
+            OutputType.Mp4 => Path.ChangeExtension(FileName, ".mp4"),
             _ => throw new NotImplementedException()
         };
 

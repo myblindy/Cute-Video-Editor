@@ -5,6 +5,7 @@
 #include "TranscodeInputTrimmingMarkerEntry.g.h"
 #include "TranscodeInput.g.h"
 #include "TranscodeOutput.g.h"
+#include "TranscodeFrameOutputProgressEventArgs.g.h"
 #include "Transcode.g.h"
 
 class FFmpegController;
@@ -140,13 +141,30 @@ namespace winrt::CuteVideoEditor_Video::implementation
 		double frameRateMultiplier;
 	};
 
+	struct TranscodeFrameOutputProgressEventArgs : TranscodeFrameOutputProgressEventArgsT<TranscodeFrameOutputProgressEventArgs>
+	{
+		uint64_t FrameNumber() const { return frameNumber; }
+		Windows::Graphics::Imaging::SoftwareBitmap FrameBitmap() const { return frameBitmap; }
+
+		TranscodeFrameOutputProgressEventArgs() { }
+		TranscodeFrameOutputProgressEventArgs(uint64_t frameNumber, Windows::Graphics::Imaging::SoftwareBitmap const& frameBitmap)
+		{
+			this->frameNumber = frameNumber;
+			this->frameBitmap = frameBitmap;
+		}
+
+	private:
+		uint64_t frameNumber{};
+		Windows::Graphics::Imaging::SoftwareBitmap frameBitmap{ nullptr };
+	};
+
 	struct Transcode : TranscodeT<Transcode>
 	{
 		Transcode();
 
 		void Run(CuteVideoEditor_Video::TranscodeInput const& input, CuteVideoEditor_Video::TranscodeOutput const& output);
 
-		winrt::event_token FrameOutputProgress(Windows::Foundation::EventHandler<std::uint64_t> const& handler) { return frameOutputProgress.add(handler); }
+		winrt::event_token FrameOutputProgress(Windows::Foundation::EventHandler<CuteVideoEditor_Video::TranscodeFrameOutputProgressEventArgs> const& handler) { return frameOutputProgress.add(handler); }
 		void FrameOutputProgress(winrt::event_token const& token) noexcept { frameOutputProgress.remove(token); }
 
 		virtual ~Transcode() { Close(); }
@@ -154,7 +172,7 @@ namespace winrt::CuteVideoEditor_Video::implementation
 
 	private:
 		std::unique_ptr<FFmpegController> ffmpegController;
-		winrt::event<Windows::Foundation::EventHandler<std::uint64_t>> frameOutputProgress;
+		winrt::event<Windows::Foundation::EventHandler<CuteVideoEditor_Video::TranscodeFrameOutputProgressEventArgs>> frameOutputProgress;
 	};
 }
 
@@ -177,6 +195,10 @@ namespace winrt::CuteVideoEditor_Video::factory_implementation
 	};
 
 	struct TranscodeOutput : TranscodeOutputT<TranscodeOutput, implementation::TranscodeOutput>
+	{
+	};
+
+	struct TranscodeFrameOutputProgressEventArgs : TranscodeFrameOutputProgressEventArgsT<TranscodeFrameOutputProgressEventArgs, implementation::TranscodeFrameOutputProgressEventArgs>
 	{
 	};
 

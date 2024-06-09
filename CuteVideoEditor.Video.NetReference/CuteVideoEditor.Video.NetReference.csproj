@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
+    <Platforms>x86;x64;arm64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Configurations>Debug;Release</Configurations>
+    <UseWinUI>true</UseWinUI>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CsWinRTIncludes>CuteVideoEditor_Video</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240428000" />
+
+    <ProjectReference Include="..\CuteVideoEditor.Video\CuteVideoEditor.Video.vcxproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild-CVE-Video" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;..\$(Platform)\$(Configuration)\CuteVideoEditor.Video\*&quot; &quot;$(OutDir)&quot; /d /q /s /i /r /m /y" />
+  </Target>
+</Project>

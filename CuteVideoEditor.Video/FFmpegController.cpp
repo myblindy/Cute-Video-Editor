@@ -457,9 +457,27 @@ void FFmpegController::ConvertFrame(AVFrame* srcFrame, AVFrame* dstFrame)
 	check_av_result(sws_scale(&*swsContext, srcFrame->data, srcFrame->linesize, 0, srcFrame->height, dstFrame->data, dstFrame->linesize));
 }
 
-AVFrame* FFmpegController::GetRgbaTemporaryFrame(AVFrame* frame)
+AVFrame* FFmpegController::GetRgbaTemporaryFrame(AVFrame* frame, int maxWidth, int maxHeight)
 {
-	auto rgbaFrame = GetTemporaryFrame(AV_PIX_FMT_BGRA, frame->width, frame->height);
+	auto width = frame->width;
+	auto height = frame->height;
+
+	if (maxWidth > 0 && maxHeight > 0)
+	{
+		auto aspectRatio = (double)width / height;
+		if (aspectRatio >= 1 && width > maxWidth)
+		{
+			width = maxWidth;
+			height = maxWidth / aspectRatio;
+		}
+		else if (aspectRatio < 1 && height > maxHeight)
+		{
+			height = maxHeight;
+			width = maxHeight * aspectRatio;
+		}
+	}
+
+	auto rgbaFrame = GetTemporaryFrame(AV_PIX_FMT_BGRA, width, height);
 	ConvertFrame(frame, rgbaFrame);
 	return rgbaFrame;
 }

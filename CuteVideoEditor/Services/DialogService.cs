@@ -4,6 +4,7 @@ using CuteVideoEditor.Core.Services;
 using CuteVideoEditor.ViewModels;
 using CuteVideoEditor.ViewModels.Dialogs;
 using CuteVideoEditor.Views.Dialogs;
+using CuteVideoEditor_Video;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
@@ -64,7 +65,7 @@ public class DialogService(IServiceProvider serviceProvider, SettingsService set
         var dlg = serviceProvider.GetRequiredService<ExportVideoContentDialog>();
         dlg.XamlRoot = App.MainWindow.Content.XamlRoot;
         dlg.ViewModel.FileName = mainViewModel.ProjectFileName;
-        dlg.ViewModel.Type = VideoOutputType.Vp9;
+        dlg.ViewModel.Type = OutputType.Vp9;
         dlg.ViewModel.OriginalFrameRate = mainViewModel.VideoPlayerViewModel.MediaFrameRate;
 
         if (await dlg.ShowAsync() is not ContentDialogResult.Primary)

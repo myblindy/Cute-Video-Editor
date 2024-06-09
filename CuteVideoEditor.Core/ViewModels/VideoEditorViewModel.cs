@@ -15,6 +15,7 @@ using System.Reflection;
 using CuteVideoEditor.Core.Contracts.Services;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using CuteVideoEditor.Core.Contracts.ViewModels;
+using Windows.Graphics.Imaging;
 
 namespace CuteVideoEditor.ViewModels;
 
@@ -244,7 +245,6 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
             var encodingResult = await dialogService.ShowOperationProgressDialog("Please wait, encoding...", true, async vm =>
             {
                 var totalFrames = VideoPlayerViewModel.GetFrameNumberFromPosition(VideoPlayerViewModel.OutputMediaDuration);
-                var processedFrames = 0;
 
                 await Task.Run(() =>
                 {
@@ -258,11 +258,11 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                                 CropFrames = CropFrames,
                                 TrimmingMarkers = VideoPlayerViewModel.TrimmingMarkers,
                                 EncoderTitle = $"CuteVideoEditor {Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}",
-                            }, outputParameters, () =>
+                            }, outputParameters, (processedFrames, frameBitmap) => mainSyncronizationContext.Post(_ =>
                             {
-                                if (Interlocked.Increment(ref processedFrames) is { } processedFramesValue && processedFramesValue % 15 == 0)
-                                    mainSyncronizationContext.Post(_ => vm.Progress = (double)processedFramesValue / totalFrames, null);
-                            });
+                                vm.Progress = (double)processedFrames / totalFrames;
+                                vm.PreviewFrame = frameBitmap;
+                            }, null));
                         duration = sw.Elapsed;
 
                         vm.Result = true;

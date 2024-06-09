@@ -14,10 +14,12 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.Description, Mode=OneWay}"/>
         <ProgressBar Grid.Row="2" Minimum="0" Maximum="1" Value="{x:Bind ViewModel.Progress, Mode=OneWay}"/>
+        <Image Grid.Row="3" Source="{x:Bind PreviewFrameImage, Mode=OneWay}" Stretch="UniformToFill"/>
     </Grid>
 </ContentDialog>

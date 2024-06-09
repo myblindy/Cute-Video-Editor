@@ -18,11 +18,6 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <CsWinRTIncludes>CuteVideoEditor_Video</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-  </PropertyGroup>
-
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
     <InternalsVisibleTo Include="$(AssemblyName).VmTests" />
@@ -49,7 +44,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CuteVideoEditor.Core\CuteVideoEditor.Core.csproj" />
-    <ProjectReference Include="..\CuteVideoEditor.Video\CuteVideoEditor.Video.vcxproj" />
+    <ProjectReference Include="..\CuteVideoEditor.Video.NetReference\CuteVideoEditor.Video.NetReference.csproj" />
   </ItemGroup>
 
   <ItemGroup>
