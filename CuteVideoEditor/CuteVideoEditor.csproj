@@ -61,6 +61,6 @@
   </PropertyGroup>
 
   <Target Name="PostBuild-CVE-Video" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;..\$(Platform)\$(Configuration)\CuteVideoEditor.Video\*&quot; &quot;$(OutDir)&quot; /d /q /s /i /r /m /y" />
+    <Exec Command="xcopy &quot;..\$(Platform)\$(Configuration)\CuteVideoEditor.Video\*&quot; &quot;$(OutDir)&quot; /d /s /i /y" />
   </Target>
 </Project>

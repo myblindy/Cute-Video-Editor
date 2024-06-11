@@ -4,7 +4,7 @@
     "CropFrames": [
         {
             "FrameNumber": 0,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 1118,
                 "CenterY": 602,
                 "Height": 956,
@@ -13,7 +13,7 @@
         },
         {
             "FrameNumber": 14,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 988,
                 "CenterY": 602,
                 "Height": 956,
@@ -22,7 +22,7 @@
         },
         {
             "FrameNumber": 35,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 915,
                 "CenterY": 574,
                 "Height": 956,
@@ -31,7 +31,7 @@
         },
         {
             "FrameNumber": 52,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 882,
                 "CenterY": 489,
                 "Height": 822,
@@ -40,7 +40,7 @@
         },
         {
             "FrameNumber": 71,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 969,
                 "CenterY": 553,
                 "Height": 822,
@@ -49,7 +49,7 @@
         },
         {
             "FrameNumber": 90,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 1103,
                 "CenterY": 611,
                 "Height": 893,
@@ -58,7 +58,7 @@
         },
         {
             "FrameNumber": 109,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 1155,
                 "CenterY": 587,
                 "Height": 986,
@@ -67,7 +67,7 @@
         },
         {
             "FrameNumber": 129,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 1079,
                 "CenterY": 546,
                 "Height": 1069,
@@ -76,7 +76,7 @@
         },
         {
             "FrameNumber": 146,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 919,
                 "CenterY": 546,
                 "Height": 1069,
@@ -85,7 +85,7 @@
         },
         {
             "FrameNumber": 161,
-            "Rect": {
+            "CropRectangle": {
                 "CenterX": 497,
                 "CenterY": 546,
                 "Height": 1069,
