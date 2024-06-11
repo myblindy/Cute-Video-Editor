@@ -420,39 +420,40 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
 
     public bool ProcessKey(ushort key, bool ctrl, bool up)
     {
-        switch (((VIRTUAL_KEY)key, ctrl, up))
-        {
-            case (VIRTUAL_KEY.VK_SPACE, false, true):
-                TogglePlayPause();
-                return true;
-            case (VIRTUAL_KEY.VK_LEFT, false, false):
-                Pause();
-                VideoPlayerViewModel.FrameStep(false);
-                return true;
-            case (VIRTUAL_KEY.VK_RIGHT, false, false):
-                Pause();
-                VideoPlayerViewModel.FrameStep(true);
-                return true;
-            case (VIRTUAL_KEY.VK_M, false, true):
-                AddMarker();
-                return true;
-            case (VIRTUAL_KEY.VK_HOME, false, true):
-                Pause();
-                VideoPlayerViewModel.OutputFrameNumber = 0;
-                return true;
-            case (VIRTUAL_KEY.VK_END, false, true):
-                Pause();
-                VideoPlayerViewModel.OutputMediaPosition = VideoPlayerViewModel.OutputMediaDuration;
-                return true;
-            case (VIRTUAL_KEY.VK_LEFT, true, false):
-                Pause();
-                CropFrameStep(false);
-                return true;
-            case (VIRTUAL_KEY.VK_RIGHT, true, false):
-                Pause();
-                CropFrameStep(true);
-                return true;
-        }
+        if (!dialogService.IsDialogOpen)
+            switch (((VIRTUAL_KEY)key, ctrl, up))
+            {
+                case (VIRTUAL_KEY.VK_SPACE, false, true):
+                    TogglePlayPause();
+                    return true;
+                case (VIRTUAL_KEY.VK_LEFT, false, false):
+                    Pause();
+                    VideoPlayerViewModel.FrameStep(false);
+                    return true;
+                case (VIRTUAL_KEY.VK_RIGHT, false, false):
+                    Pause();
+                    VideoPlayerViewModel.FrameStep(true);
+                    return true;
+                case (VIRTUAL_KEY.VK_M, false, true):
+                    AddMarker();
+                    return true;
+                case (VIRTUAL_KEY.VK_HOME, false, true):
+                    Pause();
+                    VideoPlayerViewModel.OutputFrameNumber = 0;
+                    return true;
+                case (VIRTUAL_KEY.VK_END, false, true):
+                    Pause();
+                    VideoPlayerViewModel.OutputMediaPosition = VideoPlayerViewModel.OutputMediaDuration;
+                    return true;
+                case (VIRTUAL_KEY.VK_LEFT, true, false):
+                    Pause();
+                    CropFrameStep(false);
+                    return true;
+                case (VIRTUAL_KEY.VK_RIGHT, true, false):
+                    Pause();
+                    CropFrameStep(true);
+                    return true;
+            }
 
         return false;
     }

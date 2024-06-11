@@ -13,6 +13,8 @@ public enum MessageDialogResult
 
 public interface IDialogService
 {
+    bool IsDialogOpen { get; }
+
     Task<string?> SelectSaveProjectFileAsync(string? filename);
     Task<string?> SelectSaveVideoFileAsync(string? filename);
     Task<string?> SelectVideoFileAsync();

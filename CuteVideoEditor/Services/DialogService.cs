@@ -13,6 +13,8 @@ namespace CuteVideoEditor.Services;
 
 public class DialogService(IServiceProvider serviceProvider, SettingsService settingsService) : IDialogService
 {
+    public bool IsDialogOpen { get; private set; }
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Service")]
     public async Task<string?> SelectVideoFileAsync()
     {
@@ -28,7 +30,16 @@ public class DialogService(IServiceProvider serviceProvider, SettingsService set
             }
         };
         WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
-        return await picker.PickSingleFileAsync() is { } file ? file.Path : null;
+
+        try
+        {
+            IsDialogOpen = true;
+            return await picker.PickSingleFileAsync() is { } file ? file.Path : null;
+        }
+        finally
+        {
+            IsDialogOpen = false;
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Service")]
@@ -43,7 +54,16 @@ public class DialogService(IServiceProvider serviceProvider, SettingsService set
             SuggestedFileName = filename
         };
         WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
-        return await picker.PickSaveFileAsync() is { } file ? file.Path : null;
+
+        try
+        {
+            IsDialogOpen = true;
+            return await picker.PickSaveFileAsync() is { } file ? file.Path : null;
+        }
+        finally
+        {
+            IsDialogOpen = false;
+        }
     }
 
     public async Task<string?> SelectSaveVideoFileAsync(string? filename)
@@ -57,7 +77,16 @@ public class DialogService(IServiceProvider serviceProvider, SettingsService set
             SuggestedFileName = filename
         };
         WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
-        return await picker.PickSaveFileAsync() is { } file ? file.Path : null;
+
+        try
+        {
+            IsDialogOpen = true;
+            return await picker.PickSaveFileAsync() is { } file ? file.Path : null;
+        }
+        finally
+        {
+            IsDialogOpen = false;
+        }
     }
 
     public async Task<VideoTranscodeOutput?> SelectTranscodeOutputParameters(VideoEditorViewModel mainViewModel)
@@ -68,13 +97,21 @@ public class DialogService(IServiceProvider serviceProvider, SettingsService set
         dlg.ViewModel.Type = OutputType.Vp9;
         dlg.ViewModel.OriginalFrameRate = mainViewModel.VideoPlayerViewModel.MediaFrameRate;
 
-        if (await dlg.ShowAsync() is not ContentDialogResult.Primary)
-            return null;
+        try
+        {
+            IsDialogOpen = true;
+            if (await dlg.ShowAsync() is not ContentDialogResult.Primary)
+                return null;
 
-        var output = dlg.ViewModel.BuildTranscodeOutputProperties(mainViewModel);
-        settingsService.LastCrf = output.Crf;
-        settingsService.LastVideoOutputType = output.OutputType;
-        return output;
+            var output = dlg.ViewModel.BuildTranscodeOutputProperties(mainViewModel);
+            settingsService.LastCrf = output.Crf;
+            settingsService.LastVideoOutputType = output.OutputType;
+            return output;
+        }
+        finally
+        {
+            IsDialogOpen = false;
+        }
     }
 
     public async Task<bool> ShowOperationProgressDialog(string? description, bool autoClose,
@@ -84,18 +121,46 @@ public class DialogService(IServiceProvider serviceProvider, SettingsService set
         dlg.XamlRoot = App.MainWindow.Content.XamlRoot;
         dlg.ViewModel.Description = description;
 
-        var showTask = dlg.ShowAsync();
-        await operation(dlg.ViewModel);
+        try
+        {
+            IsDialogOpen = true;
+            var showTask = dlg.ShowAsync();
+            await operation(dlg.ViewModel);
 
-        if (autoClose) dlg.Hide();
-        await showTask;
+            if (autoClose) dlg.Hide();
+            await showTask;
 
-        return dlg.ViewModel.Result;
+            return dlg.ViewModel.Result;
+        }
+        finally
+        {
+            IsDialogOpen = false;
+        }
     }
 
-    public async Task<MessageDialogResult> ShowInformationMessageDialog(string title, string message, string? extraButtonText) =>
-        await MessageContentDialog.Information(App.MainWindow.Content.XamlRoot, title, message, extraButtonText);
+    public async Task<MessageDialogResult> ShowInformationMessageDialog(string title, string message, string? extraButtonText)
+    {
+        try
+        {
+            IsDialogOpen = true;
+            return await MessageContentDialog.Information(App.MainWindow.Content.XamlRoot, title, message, extraButtonText);
+        }
+        finally
+        {
+            IsDialogOpen = false;
+        }
+    }
 
-    public async Task ShowErrorMessageDialog(string content, string title) =>
-        await MessageContentDialog.Error(App.MainWindow.Content.XamlRoot, title, content);
+    public async Task ShowErrorMessageDialog(string content, string title)
+    {
+        try
+        {
+            IsDialogOpen = true;
+            await MessageContentDialog.Error(App.MainWindow.Content.XamlRoot, title, content);
+        }
+        finally
+        {
+            IsDialogOpen = false;
+        }
+    }
 }
