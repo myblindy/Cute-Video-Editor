@@ -426,24 +426,30 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                 TogglePlayPause();
                 return true;
             case (VIRTUAL_KEY.VK_LEFT, false, false):
+                Pause();
                 VideoPlayerViewModel.FrameStep(false);
                 return true;
             case (VIRTUAL_KEY.VK_RIGHT, false, false):
+                Pause();
                 VideoPlayerViewModel.FrameStep(true);
                 return true;
             case (VIRTUAL_KEY.VK_M, false, true):
                 AddMarker();
                 return true;
             case (VIRTUAL_KEY.VK_HOME, false, true):
+                Pause();
                 VideoPlayerViewModel.OutputFrameNumber = 0;
                 return true;
             case (VIRTUAL_KEY.VK_END, false, true):
+                Pause();
                 VideoPlayerViewModel.OutputMediaPosition = VideoPlayerViewModel.OutputMediaDuration;
                 return true;
             case (VIRTUAL_KEY.VK_LEFT, true, false):
+                Pause();
                 CropFrameStep(false);
                 return true;
             case (VIRTUAL_KEY.VK_RIGHT, true, false):
+                Pause();
                 CropFrameStep(true);
                 return true;
         }
