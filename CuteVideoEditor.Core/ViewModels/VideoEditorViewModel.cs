@@ -371,7 +371,6 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                 {
                     FreezeCropSizeMode = model.FreezeCropSizeMode;
                     ProjectFileName = projectFileName;
-                    VideoPlayerViewModel.MediaFileName = Path.GetDirectoryName(projectFileName) is { } projectDirectoryName ? Path.Combine(projectDirectoryName, model.MediaFileName) : model.MediaFileName;
 
                     CropFrames.Clear();
                     CropFrames.AddRange(mapper.Map<List<CropFrameEntryModel>>(model.CropFrames));
@@ -382,6 +381,8 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
 
                     VideoPlayerViewModel.TrimmingMarkers.Clear();
                     VideoPlayerViewModel.TrimmingMarkers.AddRange(mapper.Map<List<TrimmingMarkerModel>>(model.TrimmingMarkers));
+
+                    VideoPlayerViewModel.MediaFileName = Path.GetDirectoryName(projectFileName) is { } projectDirectoryName ? Path.Combine(projectDirectoryName, model.MediaFileName) : model.MediaFileName;
                     return;
                 }
             }

@@ -9,7 +9,7 @@ namespace CuteVideoEditor.ViewModels;
 partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, IDisposable
 {
     private bool disposedValue;
-    
+
     ImageReader? imageReader;
 
     [ObservableProperty]
@@ -17,7 +17,7 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
         nameof(InputMediaPosition), nameof(InputMediaDuration), nameof(InputFrameNumber),
         nameof(OutputMediaPosition), nameof(OutputMediaDuration), nameof(OutputFrameNumber))]
     string? mediaFileName;
-    
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MediaFrameRate),
         nameof(InputMediaDuration), nameof(InputFrameNumber),
@@ -182,9 +182,7 @@ partial class VideoPlayerViewModel : ObservableObject, IVideoPlayerViewModel, ID
             InputMediaDuration = imageReader.MediaDuration;
         }
 
-        TrimmingMarkers.Clear();
-        TrimmingMarkers.Add(new(0));
-        InputMediaPosition = TimeSpan.Zero;
+        OutputFrameNumber = 0;
         MediaPlayerState = MediaPlayerState.Stopped;
 
         TriggerFrameReady();
