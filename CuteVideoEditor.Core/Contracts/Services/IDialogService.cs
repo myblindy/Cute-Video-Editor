@@ -4,6 +4,13 @@ using CuteVideoEditor.ViewModels.Dialogs;
 
 namespace CuteVideoEditor.Contracts.Services;
 
+public enum MessageDialogResult
+{
+    OK,
+    Cancel,
+    Extra
+}
+
 public interface IDialogService
 {
     Task<string?> SelectSaveProjectFileAsync(string? filename);
@@ -11,5 +18,6 @@ public interface IDialogService
     Task<string?> SelectVideoFileAsync();
     Task<VideoTranscodeOutput?> SelectTranscodeOutputParameters(VideoEditorViewModel mainViewModel);
     Task<bool> ShowOperationProgressDialog(string? description, bool autoClose, Func<OperationProgressViewModel, Task> operation);
-    Task ShowInformationMessageDialog(string content, string title);
+    Task<MessageDialogResult> ShowInformationMessageDialog(string content, string title, string? extraButton = null);
+    Task ShowErrorMessageDialog(string content, string title);
 }

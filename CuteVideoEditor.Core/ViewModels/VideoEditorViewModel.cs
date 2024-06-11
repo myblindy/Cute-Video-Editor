@@ -240,7 +240,7 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
 
         if (await dialogService.SelectTranscodeOutputParameters(this) is { } outputParameters)
         {
-            TimeSpan duration = default;
+            TimeSpan encodingDuration = default;
 
             var encodingResult = await dialogService.ShowOperationProgressDialog("Please wait, encoding...", true, async vm =>
             {
@@ -263,7 +263,7 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
                                 vm.Progress = (double)processedFrames / totalFrames;
                                 vm.PreviewFrame = frameBitmap;
                             }, null));
-                        duration = sw.Elapsed;
+                        encodingDuration = sw.Elapsed;
 
                         vm.Result = true;
                     }
@@ -286,8 +286,20 @@ public partial class VideoEditorViewModel : ObservableRecipient, IDisposable
             }
             catch { }
 
-            await dialogService.ShowInformationMessageDialog("Encoding finished",
-                encodingResult ? $"Encoding finished in {duration} with a {prettyOutputFileSize} output file." : "Encoding failed.");
+            if (encodingResult)
+            {
+                if (await dialogService.ShowInformationMessageDialog("Encoding finished",
+                    $"""
+                        Encoding duration: {encodingDuration}
+                        Output duration: {VideoPlayerViewModel.OutputMediaDuration} ({VideoPlayerViewModel.OutputMediaDuration.TotalSeconds / encodingDuration.TotalSeconds:0.###} encoding fps)
+                        Output size: {prettyOutputFileSize}
+                        """, "Play Result") is MessageDialogResult.Extra)
+                {
+                    Process.Start(new ProcessStartInfo(outputParameters.FileName) { UseShellExecute = true });
+                }
+            }
+            else
+                await dialogService.ShowErrorMessageDialog("Encoding finished", "Encoding failed.");
         }
     }
 

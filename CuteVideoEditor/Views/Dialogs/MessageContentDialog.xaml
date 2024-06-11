@@ -10,6 +10,12 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <TextBlock x:Name="DescriptionTextBlock" Grid.Row="0"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Image x:Name="MessageTypeIcon" Grid.Column="0" MaxWidth="92" Margin="0,0,40,0"/>
+        <TextBlock x:Name="DescriptionTextBlock" Grid.Column="1" VerticalAlignment="Center"/>
     </Grid>
 </ContentDialog>

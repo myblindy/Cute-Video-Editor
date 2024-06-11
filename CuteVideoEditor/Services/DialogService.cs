@@ -93,6 +93,9 @@ public class DialogService(IServiceProvider serviceProvider, SettingsService set
         return dlg.ViewModel.Result;
     }
 
-    public async Task ShowInformationMessageDialog(string title, string message) =>
-        await MessageContentDialog.Information(App.MainWindow.Content.XamlRoot, title, message);
+    public async Task<MessageDialogResult> ShowInformationMessageDialog(string title, string message, string? extraButtonText) =>
+        await MessageContentDialog.Information(App.MainWindow.Content.XamlRoot, title, message, extraButtonText);
+
+    public async Task ShowErrorMessageDialog(string content, string title) =>
+        await MessageContentDialog.Error(App.MainWindow.Content.XamlRoot, title, content);
 }
