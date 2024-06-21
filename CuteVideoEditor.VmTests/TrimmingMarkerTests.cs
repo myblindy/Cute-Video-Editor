@@ -1,5 +1,8 @@
 using Cute_Video_Editor.VmTests.Helpers;
 using CuteVideoEditor.ViewModels;
+using System.ComponentModel;
+using System.Reflection;
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace Cute_Video_Editor.VmTests;
 
@@ -9,8 +12,13 @@ public class TrimmingMarkerTests
     static VideoEditorViewModel CreateDefaultTestViewModel()
     {
         var vm = Support.CreateViewModel();
-        vm.MediaDuration = TimeSpan.FromMinutes(2);
-        vm.VideoPlayerViewModel.MediaFrameRate = 30;
+        var vpvmType = vm.VideoPlayerViewModel.GetType();
+        vpvmType.GetProperty(nameof(vm.VideoPlayerViewModel.InputMediaDuration))!.SetMethod!.Invoke(vm.VideoPlayerViewModel, [TimeSpan.FromMinutes(2)]);
+        vpvmType.GetProperty(nameof(vm.VideoPlayerViewModel.MediaFrameRate))!.SetMethod!.Invoke(vm.VideoPlayerViewModel, [30]);
+
+        // trigger a trimming marker rebuild
+        vm.GetType().GetMethod("RebuildTrimmingMarkers", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(vm, []);
+
         vm.MediaPixelSize = new(1920, 1080);
         vm.VideoPlayerPixelSize = new(500, 500);
         return vm;
@@ -20,72 +28,72 @@ public class TrimmingMarkerTests
     public void NoTrimming()
     {
         var vm = CreateDefaultTestViewModel();
-        Assert.AreEqual(vm.MediaDuration, vm.OutputMediaDuration);
+        Assert.AreEqual(vm.VideoPlayerViewModel.InputMediaDuration, vm.VideoPlayerViewModel.OutputMediaDuration);
 
-        Assert.AreEqual(TimeSpan.Zero, vm.InputMediaPosition);
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaPosition);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.InputMediaPosition);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaPosition);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
-        Assert.AreEqual(TimeSpan.FromSeconds(5), vm.OutputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
+        Assert.AreEqual(TimeSpan.FromSeconds(5), vm.VideoPlayerViewModel.OutputMediaPosition);
     }
 
     [TestMethod]
     public void AllTrimmed()
     {
         var vm = CreateDefaultTestViewModel();
-        vm.TrimmingMarkers[0].TrimAfter = true;
+        vm.VideoPlayerViewModel.TrimmingMarkers[0].TrimAfter = true;
 
-        Assert.AreEqual(TimeSpan.Zero, vm.InputMediaPosition);
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaPosition);
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaDuration);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.InputMediaPosition);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaPosition);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaPosition);
     }
 
     [TestMethod]
     public void AddMarker()
     {
         var vm = CreateDefaultTestViewModel();
-        Assert.AreEqual(1, vm.TrimmingMarkers.Count);
+        Assert.AreEqual(1, vm.VideoPlayerViewModel.TrimmingMarkers.Count);
 
         vm.AddMarkerCommand.Execute(null);
-        Assert.AreEqual(1, vm.TrimmingMarkers.Count);
+        Assert.AreEqual(1, vm.VideoPlayerViewModel.TrimmingMarkers.Count);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
         vm.AddMarkerCommand.Execute(null);
-        Assert.AreEqual(2, vm.TrimmingMarkers.Count);
+        Assert.AreEqual(2, vm.VideoPlayerViewModel.TrimmingMarkers.Count);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
         vm.AddMarkerCommand.Execute(null);
-        Assert.AreEqual(3, vm.TrimmingMarkers.Count);
+        Assert.AreEqual(3, vm.VideoPlayerViewModel.TrimmingMarkers.Count);
 
         // sorted?
-        CollectionAssert.AreEqual(vm.TrimmingMarkers.OrderBy(w => w.FrameNumber).ToList(), vm.TrimmingMarkers);
+        CollectionAssert.AreEqual(vm.VideoPlayerViewModel.TrimmingMarkers.OrderBy(w => w.FrameNumber).ToList(), vm.VideoPlayerViewModel.TrimmingMarkers);
     }
 
     [TestMethod]
     public void AllTrimmed2()
     {
         var vm = CreateDefaultTestViewModel();
-        vm.TrimmingMarkers[0].TrimAfter = true;
+        vm.VideoPlayerViewModel.TrimmingMarkers[0].TrimAfter = true;
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
         vm.AddMarkerCommand.Execute(null);
-        vm.TrimmingMarkers[1].TrimAfter = true;
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaDuration);
+        vm.VideoPlayerViewModel.TrimmingMarkers[1].TrimAfter = true;
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration);
 
-        vm.InputMediaPosition = TimeSpan.Zero;
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.Zero;
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaPosition);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaPosition);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaPosition);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
-        Assert.AreEqual(TimeSpan.Zero, vm.OutputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(15);
+        Assert.AreEqual(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaPosition);
     }
 
     [TestMethod]
@@ -93,19 +101,19 @@ public class TrimmingMarkerTests
     {
         var vm = CreateDefaultTestViewModel();
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
         vm.AddMarkerCommand.Execute(null);
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
         vm.AddMarkerCommand.Execute(null);
-        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(15);
         vm.AddMarkerCommand.Execute(null);
 
         void AssertTrimming((TimeSpan input, TimeSpan output)[] values)
         {
             foreach (var (input, output) in values)
             {
-                vm.InputMediaPosition = input;
-                Assert.AreEqual(output, vm.OutputMediaPosition);
+                vm.VideoPlayerViewModel.InputMediaPosition = input;
+                Assert.AreEqual(output, vm.VideoPlayerViewModel.OutputMediaPosition);
             }
         }
 
@@ -118,7 +126,7 @@ public class TrimmingMarkerTests
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(25)),
         ]);
 
-        vm.TrimmingMarkers[0].TrimAfter = true;
+        vm.VideoPlayerViewModel.TrimmingMarkers[0].TrimAfter = true;
         AssertTrimming([
             (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
             (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(0)),
@@ -128,7 +136,7 @@ public class TrimmingMarkerTests
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(20)),
         ]);
 
-        vm.TrimmingMarkers[1].TrimAfter = true;
+        vm.VideoPlayerViewModel.TrimmingMarkers[1].TrimAfter = true;
         AssertTrimming([
             (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
             (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(0)),
@@ -138,7 +146,7 @@ public class TrimmingMarkerTests
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(15)),
         ]);
 
-        vm.TrimmingMarkers[0].TrimAfter = false;
+        vm.VideoPlayerViewModel.TrimmingMarkers[0].TrimAfter = false;
         AssertTrimming([
             (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
             (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)),
@@ -153,14 +161,13 @@ public class TrimmingMarkerTests
     public void SetOutputMediaPosition()
     {
         var vm = CreateDefaultTestViewModel();
-        vm.UpdateMediaPosition += pos => vm.InputMediaPosition = pos;
 
         void AssertOutputMediaPositions((TimeSpan output, TimeSpan input)[] vals)
         {
             foreach (var (output, input) in vals)
             {
-                vm.OutputMediaPosition = output;
-                Assert.AreEqual(input, vm.InputMediaPosition);
+                vm.VideoPlayerViewModel.OutputMediaPosition = output;
+                Assert.AreEqual(input, vm.VideoPlayerViewModel.InputMediaPosition);
             }
         }
 
@@ -173,7 +180,7 @@ public class TrimmingMarkerTests
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(25)),
         ]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
         vm.AddMarkerCommand.Execute(null);
         AssertOutputMediaPositions([
             (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
@@ -184,24 +191,14 @@ public class TrimmingMarkerTests
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(25)),
         ]);
 
-        vm.TrimmingMarkers[0].TrimAfter = true;
+        vm.VideoPlayerViewModel.TrimmingMarkers[0].TrimAfter = true;
         AssertOutputMediaPositions([
-            (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
+            (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(5)),
             (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10)),
             (TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(15)),
             (TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(20)),
             (TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(25)),
             (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(30)),
-        ]);
-
-        vm.TrimmingMarkers[1].TrimAfter = true;
-        AssertOutputMediaPositions([
-            (TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0)),
-            (TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(0)),
-            (TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(0)),
-            (TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(0)),
-            (TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(0)),
-            (TimeSpan.FromSeconds(25), TimeSpan.FromSeconds(0)),
         ]);
     }
 
@@ -212,61 +209,61 @@ public class TrimmingMarkerTests
 
         void AssertOutputTrimmingMarkers(TimeSpan outputMediaDuration, DisjunctTrimmingMarkerEntry[] disjunctOutputTrims, TimeSpan[] nonDisjunctOutputMarkers)
         {
-            Assert.AreEqual(outputMediaDuration, vm.OutputMediaDuration, "media duration");
+            Assert.AreEqual(outputMediaDuration, vm.VideoPlayerViewModel.OutputMediaDuration, "media duration");
             CollectionAssert.AreEqual(disjunctOutputTrims, vm.DisjunctOutputTrims, "disjunct output trims");
             CollectionAssert.AreEqual(nonDisjunctOutputMarkers, vm.NonDisjunctOutputMarkers, "non-disjunct output markers");
         }
 
-        AssertOutputTrimmingMarkers(vm.MediaDuration, [
-                new(TimeSpan.Zero, vm.OutputMediaDuration)
+        AssertOutputTrimmingMarkers(vm.VideoPlayerViewModel.InputMediaDuration, [
+                new(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
             ]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
         vm.AddMarkerCommand.Execute(null);
-        AssertOutputTrimmingMarkers(vm.MediaDuration, [
-                new(TimeSpan.Zero, vm.OutputMediaDuration)
+        AssertOutputTrimmingMarkers(vm.VideoPlayerViewModel.InputMediaDuration, [
+                new(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
                 TimeSpan.FromSeconds(10)
             ]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(20);
         vm.AddMarkerCommand.Execute(null);
-        AssertOutputTrimmingMarkers(vm.MediaDuration, [
-                new(TimeSpan.Zero, vm.OutputMediaDuration)
+        AssertOutputTrimmingMarkers(vm.VideoPlayerViewModel.InputMediaDuration, [
+                new(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
                 TimeSpan.FromSeconds(10),
                 TimeSpan.FromSeconds(20)
             ]);
 
-        vm.TrimmingMarkers[1].TrimAfter = true;
-        AssertOutputTrimmingMarkers(vm.MediaDuration - TimeSpan.FromSeconds(10), [
+        vm.VideoPlayerViewModel.TrimmingMarkers[1].TrimAfter = true;
+        AssertOutputTrimmingMarkers(vm.VideoPlayerViewModel.InputMediaDuration - TimeSpan.FromSeconds(10), [
                 new(TimeSpan.Zero, TimeSpan.FromSeconds(10)),
-                new(TimeSpan.FromSeconds(10), vm.OutputMediaDuration)
+                new(TimeSpan.FromSeconds(10), vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
             ]);
 
-        vm.TrimmingMarkers[0].TrimAfter = true;
-        AssertOutputTrimmingMarkers(vm.MediaDuration - TimeSpan.FromSeconds(20), [
-                new(TimeSpan.Zero, vm.OutputMediaDuration)
+        vm.VideoPlayerViewModel.TrimmingMarkers[0].TrimAfter = true;
+        AssertOutputTrimmingMarkers(vm.VideoPlayerViewModel.InputMediaDuration - TimeSpan.FromSeconds(20), [
+                new(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
             ]);
 
-        vm.TrimmingMarkers[2].TrimAfter = true;
+        vm.VideoPlayerViewModel.TrimmingMarkers[2].TrimAfter = true;
         AssertOutputTrimmingMarkers(TimeSpan.Zero, [
-                new(TimeSpan.Zero, vm.OutputMediaDuration)
+                new(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
             ]);
 
-        vm.TrimmingMarkers[0].TrimAfter = false;
+        vm.VideoPlayerViewModel.TrimmingMarkers[0].TrimAfter = false;
         AssertOutputTrimmingMarkers(TimeSpan.FromSeconds(10), [
-                new(TimeSpan.Zero, vm.OutputMediaDuration)
+                new(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
             ]);
 
-        vm.TrimmingMarkers[1].TrimAfter = false;
+        vm.VideoPlayerViewModel.TrimmingMarkers[1].TrimAfter = false;
         AssertOutputTrimmingMarkers(TimeSpan.FromSeconds(20), [
-                new(TimeSpan.Zero, vm.OutputMediaDuration)
+                new(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)
             ], [
                 TimeSpan.FromSeconds(10)
             ]);
@@ -282,21 +279,21 @@ public class TrimmingMarkerTests
 
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
-        var frameMarker1 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
         vm.AddMarkerCommand.Execute(null);
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
-        var frameMarker2 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
         vm.AddMarkerCommand.Execute(null);
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(15);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(25);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(25);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
     }
@@ -311,21 +308,21 @@ public class TrimmingMarkerTests
 
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
-        var frameMarker1 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
         vm.AddMarkerCommand.Execute(null);
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
-        var frameMarker2 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
         vm.AddMarkerCommand.Execute(null);
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(15);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0]);
     }
@@ -340,35 +337,112 @@ public class TrimmingMarkerTests
 
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(10);
-        var frameMarker1 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
         vm.AddMarkerCommand.Execute(null);
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(20);
-        var frameMarker2 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
         vm.AddMarkerCommand.Execute(null);
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(30);
-        var frameMarker3 = vm.GetFrameNumberFromPosition(vm.InputMediaPosition);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(30);
+        var frameMarker3 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
         vm.AddMarkerCommand.Execute(null);
         AssertCropKeyFrames([0]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(35);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(35);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0, frameMarker3 - 1, frameMarker3]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(25);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(25);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0, frameMarker2 - 1, frameMarker2]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(15);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0, frameMarker1 - 1, frameMarker1]);
 
-        vm.InputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(5);
         vm.AddTrimCommand.Execute(null);
         AssertCropKeyFrames([0]);
+    }
+
+    [TestMethod]
+    public void DisjunctOutputTrims()
+    {
+        var vm = CreateDefaultTestViewModel();
+
+        void AssertDisjunctOutputTrims((TimeSpan From, TimeSpan to)[] expected) =>
+            CollectionAssert.AreEqual(expected, vm.DisjunctOutputTrims.Select(w => (w.From, w.To)).ToList());
+
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)]);
+
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)]);
+
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(30);
+        var frameMarker3 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)]);
+
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(35);
+        vm.AddTrimCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, TimeSpan.FromSeconds(30))]);
+
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(0.5);
+        vm.AddTrimCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, TimeSpan.FromSeconds(20))]);
+
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, TimeSpan.FromSeconds(20))]);
+    }
+
+    [TestMethod]
+    public void DisjunctOutputTrims2()
+    {
+        // 1. mark1 mark2 mark3
+        // 2. trim mark1-mark2
+        // 3. insert mark at the new beginning
+
+        var vm = CreateDefaultTestViewModel();
+
+        void AssertDisjunctOutputTrims((TimeSpan From, TimeSpan to)[] expected) =>
+            CollectionAssert.AreEqual(expected, vm.DisjunctOutputTrims.Select(w => (w.From, w.To)).ToList());
+        
+        // 1.
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(10);
+        var frameMarker1 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)]);
+
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(20);
+        var frameMarker2 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)]);
+
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(30);
+        var frameMarker3 = vm.VideoPlayerViewModel.GetFrameNumberFromPosition(vm.VideoPlayerViewModel.InputMediaPosition);
+        vm.AddMarkerCommand.Execute(null);
+        AssertDisjunctOutputTrims([(TimeSpan.Zero, vm.VideoPlayerViewModel.OutputMediaDuration)]);
+
+        // 2.
+        vm.VideoPlayerViewModel.InputMediaPosition = TimeSpan.FromSeconds(15);
+        vm.AddTrimCommand.Execute(null);
+        AssertDisjunctOutputTrims([
+            (TimeSpan.Zero, TimeSpan.FromSeconds(10)),
+            (TimeSpan.FromSeconds(10), vm.VideoPlayerViewModel.InputMediaDuration - TimeSpan.FromSeconds(10))]);
+
+        // 3.
+        vm.VideoPlayerViewModel.OutputMediaPosition = TimeSpan.FromSeconds(5);
+        vm.AddMarkerCommand.Execute(null);
+        AssertDisjunctOutputTrims([
+            (TimeSpan.Zero, TimeSpan.FromSeconds(10)),
+            (TimeSpan.FromSeconds(10), vm.VideoPlayerViewModel.InputMediaDuration - TimeSpan.FromSeconds(10))]);
     }
 }

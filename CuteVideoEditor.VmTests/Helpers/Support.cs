@@ -14,9 +14,9 @@ static class Support
     public static IHost BuildHost() => Host.CreateDefaultBuilder()
         .ConfigureServices((_, services) => services
             .AddScoped<VideoEditorViewModel>()
+            .AddScoped<IVideoPlayerViewModel, VideoPlayerViewModel>()
             .AddScoped(_ => Mock.Of<IDialogService>())
             .AddScoped(_ => Mock.Of<IMapper>())
-            .AddScoped(_ => Mock.Of<IVideoPlayerViewModel>())
             .AddScoped(_ => Mock.Of<IVideoTranscoderService>()))
         .Build();
 

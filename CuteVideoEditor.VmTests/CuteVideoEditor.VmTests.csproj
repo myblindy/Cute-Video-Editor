@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CuteVideoEditor.Core\CuteVideoEditor.Core.csproj" />
+    <ProjectReference Include="..\CuteVideoEditor\CuteVideoEditor.csproj" />
   </ItemGroup>
 
   <ItemGroup>
